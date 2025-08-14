@@ -1,20 +1,14 @@
 // app/layout.tsx
 import "./globals.css";
-import { ThemeProvider } from "next-themes";
-import type { ReactNode } from "react";
+import { Inter } from "next/font/google";
 
-export const metadata = {
-  title: "AI Stock Analyzer",
-  description: "Phase-1 Dashboard",
-};
+const inter = Inter({ subsets: ["latin"], display: "swap" });
 
-export default function RootLayout({ children }: { children: ReactNode }) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body>
-        <ThemeProvider attribute="class" defaultTheme="light">
-          {children}
-        </ThemeProvider>
+      <body className={`${inter.className} bg-background text-foreground antialiased`}>
+        {children}
       </body>
     </html>
   );
