@@ -1,4 +1,3 @@
-// app/dashboard/components/QuickStats.tsx
 import { dummyStockData } from "@/data/dummyStockData";
 
 export default function QuickStats() {

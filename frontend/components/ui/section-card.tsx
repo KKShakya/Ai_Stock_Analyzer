@@ -24,9 +24,9 @@ export default function SectionCard({
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.18, ease: "easeOut" }}
     >
-      <Card className="bg-card text-card-foreground border border-border rounded-2xl shadow-sm hover:shadow-md transition-shadow min-h-[220px]">
+      <Card className="bg-card text-card-foreground border border-border rounded-2xl shadow-sm hover:shadow-md transition-shadow min-h-[200px]">
 
-        <div className="flex items-start gap-3 border-b border-border/70 px-5 py-4">
+        <div className="flex items-start gap-3 border-b border-border/70 px-5 py-2">
           {icon && (
             <div className="mt-0.5 inline-flex h-8 w-8 items-center justify-center rounded-lg bg-muted">
               {icon}
@@ -38,9 +38,9 @@ export default function SectionCard({
               <p className="text-sm text-muted-foreground mt-0.5">{description}</p>
             )}
           </div>
-          {actions}
+          {actions} actions
         </div>
-        <div className="p-5">{children}</div>
+        <div className="p-4">{children}</div>
       </Card>
     </motion.div>
   );

@@ -2,12 +2,13 @@
 import { TrendingUp, Table as TableIcon, Newspaper, Gauge } from "lucide-react";
 import SectionCard from "@/components/ui/section-card";
 import KpiPill from "@/components/ui/kpi-pill";
-import MarketSentiment from "../components/marketSentiments";
-import OIAndPCRTrends from "../components/PCRData";
+import MarketOverviewCard from "../components/marketOverviewCard";
+import OISentimentCard from "../components/PCRData";
 import NewsFeed from "../components/newsFeed";
-import LoadingSkeleton from "../components/loadingSkeleton";
-import OnboardingBanner from "../components/onBoradingBanner"
+import LoadingSkeleton from "../components/layout/loadingSkeleton";
+import OnboardingBanner from "../components/layout/onBoradingBanner"
 import { useState, useEffect } from "react"
+import AIStrategyChatCard from "../components/aiStrategyChart";
 
 
 
@@ -35,8 +36,8 @@ export default function DashboardPage() {
           description="Aggregated signal from news, social and options flow"
           icon={<TrendingUp className="h-4 w-4" />}
         >
-          <div className="h-[280px]">
-            <MarketSentiment />
+          <div className="h-[200px]">
+            <MarketOverviewCard />
           </div>
         </SectionCard>
 
@@ -45,8 +46,19 @@ export default function DashboardPage() {
           description="Strike-wise Open Interest and intraday change"
           icon={<TableIcon className="h-4 w-4" />}
         >
-          <div className="h-[280px] overflow-auto rounded-lg border border-border">
-            <OIAndPCRTrends />
+          <div className="h-[200px] overflow-auto rounded-lg border border-border">
+            <OISentimentCard />
+          </div>
+        </SectionCard>
+        
+        <SectionCard
+          title="AI strategy performance"
+          description="Market sentiments and AI strategy performance"
+          icon={<TableIcon className="h-4 w-4" />}
+        >
+          <div className="h-[200px] overflow-auto rounded-lg border border-border">
+
+            <AIStrategyChatCard />
           </div>
         </SectionCard>
 
