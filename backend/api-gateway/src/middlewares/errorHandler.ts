@@ -1,12 +1,44 @@
-import type { NextFunction, Request, Response } from 'express';
+import { Request, Response, NextFunction } from 'express';
 import { logger } from '../lib/logger';
 
-export function notFound(_: Request, res: Response) {
-  res.status(404).json({ error: 'Not Found' });
+interface ApiError extends Error {
+  status?: number;
 }
 
-export function errorHandler(err: any, req: Request, res: Response, __: NextFunction) {
-  logger.error({ err, id: (req as any).requestId });
+export function notFound(_req: Request, res: Response) {
+  res.status(404).json({
+    error: 'Not Found',
+    message: 'The requested resource was not found.',
+    status: 404,
+    timestamp: new Date().toISOString(),
+  });
+}
+
+export function errorHandler(
+  err: ApiError,
+  req: Request,
+  res: Response,
+  _next: NextFunction
+) {
   const status = err.status || 500;
-  res.status(status).json({ error: err.message || 'Internal Server Error' });
+  const isProd = process.env.NODE_ENV === 'production';
+
+  logger.error({
+    message: err.message,
+    status,
+    path: req.originalUrl,
+    method: req.method,
+    requestId: (req as any).id,
+    stack: isProd ? undefined : err.stack,
+  });
+
+  res.status(status).json({
+    error: status >= 500 ? 'Internal Server Error' : err.message,
+    message: err.message,
+    status,
+    path: req.originalUrl,
+    requestId: (req as any).id || undefined,
+    timestamp: new Date().toISOString(),
+    ...(isProd ? {} : { stack: err.stack }),
+  });
 }

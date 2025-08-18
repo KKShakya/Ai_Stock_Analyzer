@@ -17,7 +17,7 @@ app.use(express.json());
 app.use(requestId);
 app.use(rateLimit);
 
-app.use('/app/v1', routes);
+app.use('/api/v1', routes);
 
 app.use(notFound);
 app.use(errorHandler);

@@ -1,103 +1,88 @@
 "use client"
-import { TrendingUp, Table as TableIcon, Newspaper, Gauge } from "lucide-react";
+import { useEffect, useState } from "react";
+import { TrendingUp, BarChart3, Newspaper, Brain } from "lucide-react";
 import SectionCard from "@/components/ui/section-card";
-import KpiPill from "@/components/ui/kpi-pill";
-import MarketOverviewCard from "../components/marketOverviewCard";
 import OISentimentCard from "../components/PCRData";
 import NewsFeed from "../components/newsFeed";
-import LoadingSkeleton from "../components/layout/loadingSkeleton";
-import OnboardingBanner from "../components/layout/onBoradingBanner"
-import { useState, useEffect } from "react"
 import AIStrategyChatCard from "../components/aiStrategyChart";
+import MetricCard from "@/components/ui/metricCard";
+import MarketChartCard from "../components/marketChart";
+
 
 
 
 export default function DashboardPage() {
-  const [loading, setLoading] = useState(true)
+
+  const [marketData, setMarketData] = useState(null);
 
   useEffect(() => {
-    const timer = setTimeout(() => setLoading(false), 1500) // Simulate loading
-    return () => clearTimeout(timer)
-  }, [])
+    fetch("http://localhost:8080/api/v1/market/overview")
+      .then(res => res.json())
+      .then(data => setMarketData(data));
+  }, []);
 
-
+  
   return (
-    <div>
-      <OnboardingBanner />
-      {loading ? (
-        <LoadingSkeleton />
-      ) : (
-        <div>
-          <div className="grid gap-6 xl:grid-cols-5 xl:grid-rows-2">
-      {/* Left side: 2×2 layout */}
-      <div className="xl:col-span-4 xl:row-span-2 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 xl:grid-rows-2 gap-6">
-        <SectionCard
-          title="Market Sentiment"
-          description="Aggregated signal from news, social and options flow"
-          icon={<TrendingUp className="h-4 w-4" />}
-        >
-          <div className="h-[200px]">
-            <MarketOverviewCard />
-          </div>
-        </SectionCard>
-
-        <SectionCard
-          title="OI & PCR Trends"
-          description="Strike-wise Open Interest and intraday change"
-          icon={<TableIcon className="h-4 w-4" />}
-        >
-          <div className="h-[200px] overflow-auto rounded-lg border border-border">
-            <OISentimentCard />
-          </div>
-        </SectionCard>
+    <div className="min-h-screen bg-background p-6">
+      <div className="max-w-7xl mx-auto space-y-6">
         
-        <SectionCard
-          title="AI strategy performance"
-          description="Market sentiments and AI strategy performance"
-          icon={<TableIcon className="h-4 w-4" />}
-        >
-          <div className="h-[200px] overflow-auto rounded-lg border border-border">
-
-            <AIStrategyChatCard />
-          </div>
-        </SectionCard>
-
-        <SectionCard
-          title="Quick Stats"
-          description="Key metrics at a glance"
-          icon={<Gauge className="h-4 w-4" />}
-        >
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <KpiPill label="Revenue" value="13.2%" trend="up" />
-            <KpiPill label="Gross Margin" value="25.03%" trend="up" />
-            <KpiPill label="ROE" value="31.03%" trend="up" />
-            <KpiPill label="VIX" value="12.3" trend="down" />
-          </div>
-        </SectionCard>
-
-        <SectionCard
-          title="News Feed"
-          description="Relevant headlines for tracked tickers"
-          icon={<Newspaper className="h-4 w-4" />}
-        >
-          <NewsFeed />
-        </SectionCard>
-      </div>
-
-      {/* Right side: extra widgets */}
-      <div className="xl:col-span-1 space-y-3">
-        <SectionCard title="Additional Widget 1">
-          <p className="text-sm text-muted-foreground">Details or charts go here</p>
-        </SectionCard>
-
-        <SectionCard title="Additional Widget 2">
-          <p className="text-sm text-muted-foreground">More info, stats, or news feed</p>
-        </SectionCard>
-      </div>
-    </div>
+        {/* Top Metrics Row */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+         {marketData?.indices.map(ix => (
+          <MetricCard
+            key={ix.name}
+            title={ix.name}
+            value={ix.value}
+            change={ix.change}
+            changePercent={ix.changePct}
+            isPositive={ix.change >= 0}
+          />
+        ))}
         </div>
-      )}
+
+        {/* Main Content Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          
+          {/* Left Side - Main Charts */}
+          <div className="lg:col-span-2 space-y-6">
+           
+              <MarketChartCard indices={1} />
+            
+            
+            <SectionCard 
+              title="AI Strategy Assistant" 
+              subtitle="AI-powered trading recommendations"
+              icon={<Brain className="h-5 w-5" />}
+              className="h-80"
+            >
+              <AIStrategyChatCard />
+            </SectionCard>
+          </div>
+
+          {/* Right Side - Widgets */}
+          <div className="space-y-6">
+            <SectionCard 
+              title="OI & PCR Analysis" 
+              subtitle="Options flow and PCR trends"
+              icon={<BarChart3 className="h-5 w-5" />}
+              className="h-96"
+              contentClassName="overflow-auto"
+            >
+              <OISentimentCard />
+            </SectionCard>
+            
+            <SectionCard 
+              title="Market News" 
+              subtitle="Latest market headlines"
+              icon={<Newspaper className="h-5 w-5" />}
+              className="h-80"
+              contentClassName="overflow-auto"
+            >
+              <NewsFeed />
+            </SectionCard>
+          </div>
+        </div>
+      </div>
     </div>
-      
   );
 }

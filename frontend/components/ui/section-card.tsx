@@ -1,47 +1,62 @@
-// components/ui/section-card.tsx
-"use client";
-
-import { Card } from "@/components/ui/card"; // shadcn Card
-import { motion } from "framer-motion";
+import { cn } from "@/lib/utils";
 import { ReactNode } from "react";
 
-export default function SectionCard({
+export function SectionCard({
   title,
-  description,
+  subtitle,
   icon,
   actions,
   children,
+  className,
+  headerClassName,
+  contentClassName,
+  ...props
 }: {
-  title: string;
-  description?: string;
+  title?: string;
+  subtitle?: string;
   icon?: ReactNode;
   actions?: ReactNode;
   children: ReactNode;
+  className?: string;
+  headerClassName?: string;
+  contentClassName?: string;
 }) {
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 6 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.18, ease: "easeOut" }}
+    <div
+      className={cn(
+        // Using ShadCN theme variables instead of hardcoded colors
+        "bg-card text-card-foreground rounded-xl border border-border shadow-lg overflow-hidden h-full flex flex-col transition-colors",
+        className
+      )}
+      {...props}
     >
-      <Card className="bg-card text-card-foreground border border-border rounded-2xl shadow-sm hover:shadow-md transition-shadow min-h-[200px]">
-
-        <div className="flex items-start gap-3 border-b border-border/70 px-5 py-2">
-          {icon && (
-            <div className="mt-0.5 inline-flex h-8 w-8 items-center justify-center rounded-lg bg-muted">
-              {icon}
+      {(title || icon || actions) && (
+        <div className={cn(
+          "px-6 py-4 border-b border-border flex-shrink-0",
+          headerClassName
+        )}>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              {icon && <div className="text-primary">{icon}</div>}
+              <div>
+                <h3 className="text-foreground font-semibold text-base">{title}</h3>
+                {subtitle && (
+                  <p className="text-muted-foreground text-sm mt-0.5">{subtitle}</p>
+                )}
+              </div>
             </div>
-          )}
-          <div className="flex-1">
-            <h3 className="text-[15px] font-semibold tracking-[-0.01em]">{title}</h3>
-            {description && (
-              <p className="text-sm text-muted-foreground mt-0.5">{description}</p>
-            )}
+            {actions && <div>{actions}</div>}
           </div>
-          {actions} actions
         </div>
-        <div className="p-4">{children}</div>
-      </Card>
-    </motion.div>
+      )}
+      <div className={cn(
+        "flex-1 p-6 overflow-hidden",
+        contentClassName
+      )}>
+        {children}
+      </div>
+    </div>
   );
 }
+
+export default SectionCard;

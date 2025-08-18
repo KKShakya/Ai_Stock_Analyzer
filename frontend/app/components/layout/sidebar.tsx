@@ -1,9 +1,8 @@
-// components/Sidebar.tsx
 "use client";
 
 import { useState } from "react";
 import Link from "next/link";
-import { Home, Star, TrendingUp, Settings } from "lucide-react";
+import { Home, Star, TrendingUp, Settings, HelpCircle } from "lucide-react";
 
 type NavItem = { name: string; href: string; Icon: any };
 
@@ -15,7 +14,6 @@ const NAV: NavItem[] = [
 ];
 
 export default function Sidebar() {
-  // hovered controls expansion
   const [hovered, setHovered] = useState(false);
 
   return (
@@ -23,46 +21,87 @@ export default function Sidebar() {
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       className={`
-        h-screen sticky top-0 left-0 z-20 bg-white/60 dark:bg-background text-foreground
-        border-r border-slate-200 dark:border-slate-800
-        transition-all duration-300 ease-in-out
-        ${hovered ? "w-56" : "w-12"}
-        backdrop-blur-sm
-        flex flex-col items-stretch
+        h-screen sticky top-0 left-0 z-20 bg-card/95 backdrop-blur-md text-card-foreground
+        border-r border-border shadow-sm
+        transition-all duration-500 ease-in-out
+        ${hovered ? "w-64" : "w-16"}
+        flex flex-col items-center lg:items-stretch
+        overflow-hidden
       `}
     >
-      <div className="px-2 py-4 flex items-center gap-3">
-        <div className="w-8 h-8 flex items-center justify-center rounded-md bg-gradient-to-br from-indigo-500 to-cyan-500 text-white shadow">
+      {/* Logo Section */}
+      <div className={`
+        flex items-center ${hovered ? "justify-start px-4" : "justify-center px-0"}
+        py-6 w-full border-b border-border/50 min-h-[64px] transition-all duration-500
+      `}>
+        <div className="w-10 h-10 flex items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 text-white font-bold text-lg shadow-lg flex-shrink-0">
           A
         </div>
-        {hovered && <div className="text-lg font-semibold">AI Stock Analyzer</div>}
+        <span
+          className={`
+            ml-3 text-lg font-bold text-foreground select-none whitespace-nowrap
+            transition-all duration-300 ${hovered ? "opacity-100 scale-100" : "opacity-0 scale-90"}
+          `}
+        >
+          AI Stock Analyzer
+        </span>
       </div>
 
-      <nav className="mt-6 flex-1">
-        {NAV.map((item) => (
+      {/* Navigation */}
+      <nav className="flex-1 flex flex-col gap-0 mt-4 w-full">
+        {NAV.map((item, idx) => (
           <Link key={item.name} href={item.href} className="group">
             <div
               className={`
-                flex items-center gap-4 px-1 py-3 mx-2 my-1 rounded-lg
-                transition-colors duration-200 ease-in-out
-                hover:bg-slate-100 dark:hover:bg-slate-800
-                ${hovered ? "justify-start" : "justify-center"}
+                w-full flex items-center
+                ${hovered ? "justify-start pl-6" : "justify-center"}
+                gap-4 py-3 rounded-xl transition-all duration-300
+                hover:bg-accent hover:text-accent-foreground
+                active:scale-[0.98] hover:scale-[1.02]
               `}
             >
-              <item.Icon className="h-5 w-5 text-slate-700 dark:text-slate-200 group-hover:text-sky-500" />
-              {hovered && <span className="text-sm font-medium">{item.name}</span>}
+              <item.Icon className="h-5 w-5 transition-colors duration-200 group-hover:text-primary flex-shrink-0" />
+              <span
+                className={`
+                  text-sm font-medium select-none
+                  transition-all duration-300
+                  ${hovered ? "opacity-100 ml-1 scale-100" : "opacity-0 ml-0 scale-90"}
+                `}
+                style={{
+                  transitionDelay: hovered ? `${idx * 50 + 120}ms` : "0ms",
+                }}
+              >
+                {item.name}
+              </span>
             </div>
           </Link>
         ))}
       </nav>
 
-      <div className="p-3">
+      {/* Help Section */}
+      <div className={`p-3 border-t border-border/50 w-full`}>
         <button
-          className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+          className={`
+            w-full flex items-center
+            ${hovered ? "justify-start pl-6" : "justify-center"}
+            gap-3 py-3 rounded-xl transition-all duration-300
+            hover:bg-accent hover:text-accent-foreground
+          `}
           aria-label="Help"
         >
-          <div className="h-6 w-6 rounded-sm bg-slate-200 dark:bg-slate-700" />
-          {hovered && <span className="text-sm">Help</span>}
+          <HelpCircle className="h-5 w-5 transition-colors duration-200 hover:text-primary flex-shrink-0" />
+          <span
+            className={`
+              text-sm font-medium select-none
+              transition-all duration-300
+              ${hovered ? "opacity-100 ml-1 scale-100" : "opacity-0 ml-0 scale-90"}
+            `}
+            style={{
+              transitionDelay: hovered ? "180ms" : "0ms",
+            }}
+          >
+            Help & Support
+          </span>
         </button>
       </div>
     </aside>
