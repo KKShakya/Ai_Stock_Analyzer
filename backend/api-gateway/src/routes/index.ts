@@ -2,8 +2,10 @@ import { Router } from 'express';
 import type { Request, Response } from 'express';
 import fetch from 'node-fetch';
 import { env } from '../config/env';
+import { createProxyMiddleware } from 'http-proxy-middleware';
 
 const MARKET_SERVICE_URL = process.env.MARKET_SERVICE_URL || "http://localhost:5001";
+const USER_SERVICE_URL = process.env.USER_SERVICE_URL || "http://localhost:5002";
 const router = Router();
 
 // Health check endpoint
@@ -12,15 +14,41 @@ router.get('/health', (_req, res) => {
 });
 
 
-// user service routes
+// User service routes - Proxy ALL /auth/* and /user/* requests
 router.use('/auth', createProxyMiddleware({ 
-  target: 'http://localhost:5002', 
-  changeOrigin: true 
+  target: USER_SERVICE_URL,
+  changeOrigin: true,
+  pathRewrite: {
+    '^/auth': '/auth' 
+  },
+  on: {
+    error: (err: Error, req: Request, res: Response) => {
+      console.error('User Service Proxy Error:', err.message);
+      res.writeHead(500, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ 
+        error: "Failed to connect to User Service", 
+        details: err.message 
+      }));
+    }
+  }
 }));
 
 router.use('/user', createProxyMiddleware({ 
-  target: 'http://localhost:5002', 
-  changeOrigin: true 
+  target: USER_SERVICE_URL,
+  changeOrigin: true,
+  pathRewrite: {
+    '^/user': '/user' 
+  },
+  on: {
+    error: (err: Error, req: Request, res: Response) => {
+      console.error('User Service Proxy Error:', err.message);
+      res.writeHead(500, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ 
+        error: "Failed to connect to User Service", 
+        details: err.message 
+      }));
+    }
+  }
 }));
 
 
