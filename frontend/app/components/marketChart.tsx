@@ -6,45 +6,7 @@ import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "@
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
 import { TrendingUp } from "lucide-react";
 
-// Dummy chart data for testing
-const DUMMY_CHART_DATA = {
-  "NIFTY 50": [
-    { date: "Aug 12", close: 24710 },
-    { date: "Aug 13", close: 24790 },
-    { date: "Aug 14", close: 24755 },
-    { date: "Aug 15", close: 24820 },
-    { date: "Aug 16", close: 24837 },
-    { date: "Aug 17", close: 24885 },
-    { date: "Aug 18", close: 24920 }
-  ],
-  "BANKNIFTY": [
-    { date: "Aug 12", close: 52100 },
-    { date: "Aug 13", close: 52180 },
-    { date: "Aug 14", close: 52300 },
-    { date: "Aug 15", close: 52200 },
-    { date: "Aug 16", close: 52250 },
-    { date: "Aug 17", close: 52180 },
-    { date: "Aug 18", close: 52310 }
-  ],
-  "SENSEX": [
-    { date: "Aug 12", close: 82000 },
-    { date: "Aug 13", close: 82250 },
-    { date: "Aug 14", close: 82200 },
-    { date: "Aug 15", close: 82220 },
-    { date: "Aug 16", close: 82204 },
-    { date: "Aug 17", close: 82350 },
-    { date: "Aug 18", close: 82420 }
-  ],
-  "VIX": [
-    { date: "Aug 12", close: 12.6 },
-    { date: "Aug 13", close: 13.8 },
-    { date: "Aug 14", close: 14.2 },
-    { date: "Aug 15", close: 13.3 },
-    { date: "Aug 16", close: 13.2 },
-    { date: "Aug 17", close: 12.8 },
-    { date: "Aug 18", close: 12.4 }
-  ]
-};
+
 
 export default function MarketChartCard({ indices }) {
   const defaultIndexKey = indices?.[0]?.name || "NIFTY 50";
@@ -58,19 +20,12 @@ export default function MarketChartCard({ indices }) {
     
     setLoading(true);
     
-    // Simulate API delay
-    setTimeout(() => {
-      const dummyData = DUMMY_CHART_DATA[selectedIndex] || DUMMY_CHART_DATA["NIFTY 50"];
-      setChartData(dummyData);
-      setLoading(false);
-    }, 500);
-
-    // TODO: Replace with real API call when backend is ready
-    // fetch(`http://localhost:8080/api/v1/market/chart?index=${encodeURIComponent(selectedIndex)}`)
-    //   .then(res => res.json())
-    //   .then(data => setChartData(data.prices ?? []))
-    //   .catch(err => console.error('Chart data error:', err))
-    //   .finally(() => setLoading(false));
+   
+    fetch(`http://localhost:8080/api/v1/market/chart?index=${encodeURIComponent(selectedIndex)}`)
+      .then(res => res.json())
+      .then(data => setChartData(data.prices ?? []))
+      .catch(err => console.error('Chart data error:', err))
+      .finally(() => setLoading(false));
     
   }, [selectedIndex]);
 

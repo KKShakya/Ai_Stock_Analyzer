@@ -24,14 +24,14 @@ export default function Sidebar() {
         h-screen sticky top-0 left-0 z-20 bg-card/95 backdrop-blur-md text-card-foreground
         border-r border-border shadow-sm
         transition-all duration-500 ease-in-out
-        ${hovered ? "w-64" : "w-16"}
+        ${hovered ? "w-60" : "w-15"}
         flex flex-col items-center lg:items-stretch
         overflow-hidden
       `}
     >
       {/* Logo Section */}
       <div className={`
-        flex items-center ${hovered ? "justify-start px-4" : "justify-center px-0"}
+        flex items-center ${hovered ? "justify-start px-2" : "justify-start px-1"}
         py-6 w-full border-b border-border/50 min-h-[64px] transition-all duration-500
       `}>
         <div className="w-10 h-10 flex items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 text-white font-bold text-lg shadow-lg flex-shrink-0">
@@ -54,7 +54,7 @@ export default function Sidebar() {
             <div
               className={`
                 w-full flex items-center
-                ${hovered ? "justify-start pl-6" : "justify-center"}
+                justify-start pl-3
                 gap-4 py-3 rounded-xl transition-all duration-300
                 hover:bg-accent hover:text-accent-foreground
                 active:scale-[0.98] hover:scale-[1.02]

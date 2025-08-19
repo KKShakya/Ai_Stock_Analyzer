@@ -1,22 +1,28 @@
 import fs from "fs";
 import path from "path";
 
-const base = "api-gateway";
+const base = "services/user-service";
 
 const folders = [
   `${base}/src/routes`,
   `${base}/src/controllers`,
   `${base}/src/middlewares`,
   `${base}/src/utils`,
-  `${base}/tests`,
-  `${base}/config`,
+  `${base}/src/models`,
 ];
 
 const files = [
-  `${base}/src/index.js`,
-  `${base}/config/default.json`,
+  `${base}/src/index.ts`,
+  `${base}/src/routes/user.ts`,
+  `${base}/src/routes/auth.ts`,
+  `${base}/src/middlewares/auth.ts`,
+  `${base}/src/middlewares/passport.ts`,
+  `${base}/src/models/User.ts`,
+  `${base}/src/utils/jwt.ts`,
   `${base}/package.json`,
   `${base}/README.md`,
+  `${base}/.env.example`,
+  `${base}/.env`,
 ];
 
 folders.forEach(dir => {
