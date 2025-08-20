@@ -1,14 +1,31 @@
-// app/layout.tsx
-import "./globals.css";
-import { Inter } from "next/font/google";
+"use client";
 
-const inter = Inter({ subsets: ["latin"], display: "swap" });
+import './globals.css'
+import { useEffect } from 'react';
+import { useAuthStore } from '@/hooks/use-auth';
+import AuthModal from "@/components/auth/auth-modal";
+import { GlobalErrorBoundary } from '@/components/error/global-error-boundary';
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const { checkAuthStatus } = useAuthStore();
+  
+  // Check auth status on app load
+  useEffect(() => {
+    checkAuthStatus();
+  }, [checkAuthStatus]);
+  
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body className={`${inter.className} bg-background text-foreground antialiased`}>
+    <html lang="en">
+      <body>
+        <GlobalErrorBoundary>
         {children}
+        {/* Auth modal available globally */}
+        <AuthModal />
+        </GlobalErrorBoundary>
       </body>
     </html>
   );

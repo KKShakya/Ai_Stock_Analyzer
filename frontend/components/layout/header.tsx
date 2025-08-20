@@ -1,4 +1,4 @@
-// components/layout/header.tsx
+// components/layout/header.tsx (Updated version)
 "use client";
 
 import { useState } from "react";
@@ -37,12 +37,14 @@ import { usePageTitle } from "@/hooks/use-page-title";
 import ThemeToggle from "@/components/theme-toggle";
 import SearchModal from "@/components/layout/search/search-modal";
 import NotificationPanel from "@/components/layout/notifications/notification-panel";
+import MobileSidebar from "@/components/layout/mobile-sidebar"; // ← Added
 
 interface HeaderProps {
   onMenuToggle?: () => void;
 }
 
 export default function Header({ onMenuToggle }: HeaderProps) {
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false); // ← Added
   const pathname = usePathname();
   const pageTitle = usePageTitle();
   
@@ -62,6 +64,12 @@ export default function Header({ onMenuToggle }: HeaderProps) {
     openLoginModal();
   };
 
+  // Mobile menu toggle handler ← Updated
+  const handleMenuToggle = () => {
+    setIsMobileSidebarOpen(!isMobileSidebarOpen);
+    onMenuToggle?.(); // Call parent callback if provided
+  };
+
   const getUsageColor = (used: number, limit: number) => {
     const percentage = (used / limit) * 100;
     if (percentage >= 90) return "text-red-500";
@@ -79,12 +87,12 @@ export default function Header({ onMenuToggle }: HeaderProps) {
         
         {/* Left Section */}
         <div className="flex items-center gap-3 sm:gap-4 flex-1">
-          {/* Mobile Menu Toggle */}
+          {/* Mobile Menu Toggle - Updated */}
           <Button
             variant="ghost"
             size="icon"
             className="lg:hidden"
-            onClick={onMenuToggle}
+            onClick={handleMenuToggle} // ← Updated
             aria-label="Toggle menu"
           >
             <Menu className="h-5 w-5" />
@@ -168,11 +176,11 @@ export default function Header({ onMenuToggle }: HeaderProps) {
             <Button
               variant="ghost"
               size="icon"
-              className="relative hover:bg-gray-100/80 dark:hover:bg-gray-800/80 hover:shadow-md transition-all duration-200 rounded-full" 
+              className="relative hover:bg-gray-100/80 dark:hover:bg-gray-800/80 hover:shadow-md transition-all duration-200 rounded-full"
               onClick={togglePanel}
               aria-label="Notifications"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+              // whileHover={{ scale: 1.05 }}
+              // whileTap={{ scale: 0.95 }}
             >
               <Bell className="h-5 w-5" />
               
@@ -274,7 +282,7 @@ export default function Header({ onMenuToggle }: HeaderProps) {
             /* Modern Login Button */
             <motion.button
               onClick={handleLoginClick}
-              className="relative px-4 py-1 rounded-full bg-white/90 dark:bg-gray-800/90 text-foreground border border-gray-200/50 dark:border-gray-700/50 shadow-lg hover:shadow-xl transition-all duration-300 backdrop-blur-sm group overflow-hidden"
+              className="relative px-3 py-1 rounded-full bg-white/90 dark:bg-gray-800/90 text-foreground border border-gray-200/50 dark:border-gray-700/50 shadow-sm hover:shadow-xl transition-all duration-300 backdrop-blur-sm group overflow-hidden"
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
             >
@@ -285,7 +293,7 @@ export default function Header({ onMenuToggle }: HeaderProps) {
               />
               
               {/* Text */}
-              <span className="relative z-10 text-sm font-medium group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-200">
+              <span className="relative z-10 text-sm font-small group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-200">
                 Login
               </span>
               
@@ -298,6 +306,12 @@ export default function Header({ onMenuToggle }: HeaderProps) {
           )}
         </div>
       </header>
+
+      {/* Mobile Sidebar - Now Connected! */}
+      <MobileSidebar 
+        isOpen={isMobileSidebarOpen} 
+        onClose={() => setIsMobileSidebarOpen(false)} 
+      />
 
       {/* Search Modal */}
       <SearchModal />

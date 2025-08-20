@@ -7,7 +7,10 @@ dotenv.config();
 const app = express();
 
 app.use(helmet());
-app.use(cors());
+app.use(cors({
+  origin: ["http://localhost:3000","http://localhost:8080", ],
+  credentials: true
+}));
 app.use(express.json());
 
 // --- Static Dummy Chart Data ---

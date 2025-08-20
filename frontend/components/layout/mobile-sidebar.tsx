@@ -93,11 +93,11 @@ export default function MobileSidebar({ isOpen, onClose }: MobileSidebarProps) {
             {item.comingSoon && (
               <Badge variant="secondary" className="text-xs">Soon</Badge>
             )}
-            {isLocked && (
+            {/* {isLocked && (
               <Badge variant="outline" className="text-xs bg-amber-50 text-amber-700 border-amber-200">
                 Login
               </Badge>
-            )}
+            )} */}
             {isProLocked && (
               <Badge className="text-xs bg-gradient-to-r from-yellow-400 to-orange-400 text-white">
                 Pro

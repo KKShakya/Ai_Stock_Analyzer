@@ -24,7 +24,7 @@ export default function ThemeToggle() {
   return (
     <button
       onClick={() => setTheme(theme === "light" ? "dark" : "light")}
-      className="relative flex items-center gap-2 px-1 py-2 rounded-full 
+      className="relative flex items-center gap-2 px-0 py-1 rounded-full 
                   shadow-sm
                  hover:shadow-lg transition-all duration-200"
     >
