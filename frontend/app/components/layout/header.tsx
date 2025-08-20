@@ -1,7 +1,7 @@
 // components/Header.tsx
 "use client";
 
-import ThemeToggle from "./theme-toggle";
+import ThemeToggle from "../../../components/theme-toggle";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"; // if using shadcn avatar or fallback
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Menu } from "lucide-react";
