@@ -15,6 +15,7 @@ interface AuthState {
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
+  error: string | null;
   
   // Modal states
   loginModalOpen: boolean;
@@ -48,45 +49,58 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   loginModalOpen: false,
   registerModalOpen: false,
   currentView: 'login',
+  error:null,
   
   // Login function - connects to your backend
-  login: async (credentials) => {
-    set({ isLoading: true });
-    try {
-      const response = await fetch(`${API_BASE_URL}/api/v1/auth/login`, {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include', // Important for httpOnly cookies
-        body: JSON.stringify(credentials),
-      });
-      
-      const data = await response.json();
-      
-      if (data.success) {
-        // Store access token in localStorage
-        if (data.accessToken) {
-          localStorage.setItem('accessToken', data.accessToken);
-        }
-        
-        // Update auth state
-        set({ 
-          user: data.user, 
-          isAuthenticated: true, 
-          isLoading: false,
-          loginModalOpen: false,
-          registerModalOpen: false
-        });
-      } else {
-        throw new Error(data.error || 'Login failed');
+ login: async (credentials) => {
+  set({ isLoading: true });
+  
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/v1/auth/login`, {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+      body: JSON.stringify(credentials),
+    });
+    
+    // Always parse JSON first (works for both success and error responses)
+    const data = await response.json();
+    
+    console.log('Response:', { 
+      status: response.status, 
+      ok: response.ok, 
+      data 
+    });
+    
+    // Check BOTH HTTP status AND application success
+    if (response.ok && data.success) {
+      // SUCCESS PATH
+      if (data.accessToken) {
+        localStorage.setItem('accessToken', data.accessToken);
       }
-    } catch (error: any) {
-      console.error('Login failed:', error);
-      set({ isLoading: false });
-      throw error;
+      
+      set({ 
+        user: data.user, 
+        isAuthenticated: true, 
+        isLoading: false,
+        loginModalOpen: false,
+        registerModalOpen: false
+      });
+    } else {
+      // ERROR PATH - Either HTTP error OR application error
+      const errorMessage = data.error || data.message || `Login failed (${response.status})`;
+      throw new Error(errorMessage);
     }
-  },
+    
+  } catch (error: any) {
+    console.error('Login failed:', error);
+    set({ isLoading: false });
+    throw error;
+  }
+},
+
   
   // Google OAuth - redirect to your backend
   loginWithGoogle: async () => {
@@ -152,42 +166,47 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   },
   
   // Check if user is still authenticated (on app load)
-  checkAuthStatus: async () => {
-    const accessToken = localStorage.getItem('accessToken');
+checkAuthStatus: async () => {
+  const accessToken = localStorage.getItem('accessToken');
+  
+  if (!accessToken) {
+    set({ isAuthenticated: false, user: null });
+    return;
+  }
+  
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/v1/auth/status`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${accessToken}`,
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+    });
     
-    if (!accessToken) {
-      set({ isAuthenticated: false, user: null });
-      return;
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
     }
     
-    try {
-      const response = await fetch(`${API_BASE_URL}/api/v1/auth/status`, {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${accessToken}`,
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
+    const data = await response.json();
+    
+    if (data.success && data.user) {
+      set({ 
+        user: data.user, 
+        isAuthenticated: true,
+        error: null
       });
-      
-      const data = await response.json();
-      
-      if (data.success && data.user) {
-        set({ 
-          user: data.user, 
-          isAuthenticated: true 
-        });
-      } else {
-        // Token is invalid, clear it
-        localStorage.removeItem('accessToken');
-        set({ user: null, isAuthenticated: false });
-      }
-    } catch (error) {
-      console.error('Auth status check failed:', error);
+    } else {
       localStorage.removeItem('accessToken');
       set({ user: null, isAuthenticated: false });
     }
-  },
+  } catch (error) {
+    console.error('Auth status check failed:', error);
+    localStorage.removeItem('accessToken');
+    set({ user: null, isAuthenticated: false });
+  }
+},
+
   
   // Modal functions (unchanged)
   openLoginModal: () => set({ 

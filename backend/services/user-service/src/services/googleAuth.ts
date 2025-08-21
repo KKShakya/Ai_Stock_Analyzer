@@ -21,7 +21,8 @@ export class GoogleAuthService {
         'https://www.googleapis.com/auth/userinfo.profile',
         'https://www.googleapis.com/auth/userinfo.email'
       ],
-      prompt: 'consent'
+      prompt: 'consent',
+      redirect_uri: 'http://localhost:8080/api/v1/auth/google/callback'
     });
   }
 

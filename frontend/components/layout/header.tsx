@@ -172,15 +172,15 @@ export default function Header({ onMenuToggle }: HeaderProps) {
           )}
           
           {/* Enhanced Notifications Bell */}
-          <motion.div className="relative">
+          <motion.div className="relative whileHover={{ scale: 1.05 }}
+               whileTap={{ scale: 0.95 }}">
             <Button
               variant="ghost"
               size="icon"
               className="relative hover:bg-gray-100/80 dark:hover:bg-gray-800/80 hover:shadow-md transition-all duration-200 rounded-full"
               onClick={togglePanel}
               aria-label="Notifications"
-              // whileHover={{ scale: 1.05 }}
-              // whileTap={{ scale: 0.95 }}
+              
             >
               <Bell className="h-5 w-5" />
               

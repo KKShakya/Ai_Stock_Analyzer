@@ -51,12 +51,10 @@ router.get("/market/overview", async (req, res) => {
     const data = await response.json();
     res.json(data);
   } catch (err: any) {
-    res
-      .status(500)
-      .json({
-        error: "Failed to connect to Market Service",
-        details: err.message,
-      });
+    res.status(500).json({
+      error: "Failed to connect to Market Service",
+      details: err.message,
+    });
   }
 });
 
@@ -70,12 +68,10 @@ router.get("/market/chart", async (req, res) => {
     const data = await response.json();
     res.json(data);
   } catch (err: any) {
-    res
-      .status(500)
-      .json({
-        error: "Failed to connect to Market Service",
-        details: err.message,
-      });
+    res.status(500).json({
+      error: "Failed to connect to Market Service",
+      details: err.message,
+    });
   }
 });
 

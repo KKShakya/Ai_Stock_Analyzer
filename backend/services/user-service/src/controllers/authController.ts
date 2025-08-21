@@ -23,13 +23,25 @@ export const register = async (req: Request, res: Response) => {
     });
 
     res.status(201).json({
+      success: true,  
       message: 'Registration successful',
-      user,
+      user: {
+        id: user._id,
+        email: user.email,
+        name: user.name,
+        avatar: user.avatar,
+        plan: user.plan,
+        apiCallsUsed: user.apiCallsUsed,
+        apiCallsLimit: user.apiCallsLimit
+      },
       accessToken: tokens.accessToken
     });
   } catch (error: any) {
-    console.error(error)
-    res.status(400).json({ error: error.message });
+    console.error(error);
+    res.status(400).json({ 
+      success: false,  
+      error: error.message 
+    });
   }
 };
 
@@ -47,13 +59,25 @@ export const login = async (req: Request, res: Response) => {
       maxAge: 7 * 24 * 60 * 60 * 1000
     });
 
-    res.json({
+    res.status(200).json({
+      success: true,  
       message: 'Login successful',
-      user,
+      user: {
+        id: user._id,
+        email: user.email,
+        name: user.name,
+        avatar: user.avatar,
+        plan: user.plan,
+        apiCallsUsed: user.apiCallsUsed,
+        apiCallsLimit: user.apiCallsLimit
+      },
       accessToken: tokens.accessToken
     });
   } catch (error: any) {
-    res.status(401).json({ error: error.message });
+    res.status(401).json({ 
+      success: false,  
+      error: error.message 
+    });
   }
 };
 
@@ -63,11 +87,17 @@ export const googleAuth = (req: Request, res: Response) => {
     const authUrl = googleAuthService.generateAuthUrl();
     res.redirect(authUrl);
   } catch (error: any) {
-    res.status(500).json({ error: 'Failed to generate auth URL' });
+    res.status(500).json({ 
+      success: false,
+      error: 'Failed to generate auth URL' 
+    });
   }
 };
 
 // Google OAuth callback
+
+
+// In your auth controller - googleCallback function
 export const googleCallback = async (req: Request, res: Response) => {
   try {
     const { code, error } = req.query;
@@ -123,8 +153,8 @@ export const googleCallback = async (req: Request, res: Response) => {
         isNewUser = true;
       }
     }
-
-    // Generate our JWT tokens
+    
+    // Generate JWT tokens
     const authTokens = AuthService.generateTokens(user);
 
     // Set refresh token cookie
@@ -135,25 +165,29 @@ export const googleCallback = async (req: Request, res: Response) => {
       maxAge: 7 * 24 * 60 * 60 * 1000
     });
 
-    // Redirect to frontend with access token
+    // ✅ NEW: Redirect to frontend callback with token
     const redirectUrl = isNewUser 
-      ? `${config.urls.frontend}/auth/success?token=${authTokens.accessToken}&newUser=true`
-      : `${config.urls.frontend}/auth/success?token=${authTokens.accessToken}`;
+      ? `${config.urls.frontend}/auth/callback?success=true&token=${authTokens.accessToken}&newUser=true`
+      : `${config.urls.frontend}/auth/callback?success=true&token=${authTokens.accessToken}`;
     
     res.redirect(redirectUrl);
 
   } catch (error: any) {
     console.error('Google auth callback error:', error);
-    res.redirect(`${config.urls.frontend}/auth/error?error=callback_failed`);
+    res.redirect(`${config.urls.frontend}/auth/callback?error=callback_failed`);
   }
 };
+
 
 // Refresh token
 export const refreshToken = async (req: Request, res: Response) => {
   try {
     const refreshToken = req.cookies.refreshToken;
     if (!refreshToken) {
-      return res.status(401).json({ error: 'Refresh token not provided' });
+      return res.status(401).json({ 
+        success: false,
+        error: 'Refresh token not provided' 
+      });
     }
 
     const tokens = await AuthService.refreshAccessToken(refreshToken);
@@ -165,39 +199,58 @@ export const refreshToken = async (req: Request, res: Response) => {
       maxAge: 7 * 24 * 60 * 60 * 1000
     });
 
-    res.json({ accessToken: tokens.accessToken });
+    res.status(200).json({ 
+      success: true,  
+      accessToken: tokens.accessToken 
+    });
   } catch (error: any) {
-    console.log(error)
-    res.status(401).json({ error: error.message });
+    console.log(error);
+    res.status(401).json({ 
+      success: false,  
+      error: error.message 
+    });
   }
 };
 
 // Logout
 export const logout = (req: Request, res: Response) => {
   res.clearCookie('refreshToken');
-  res.json({ message: 'Logout successful' });
+  res.status(200).json({ 
+    success: true,  
+    message: 'Logout successful' 
+  });
 };
 
-// Auth status check
+// Auth status check - FIXED
 export const getAuthStatus = async (req: Request, res: Response) => {
   try {
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return res.json({ authenticated: false });
+      return res.status(200).json({ 
+        success: false,  
+        authenticated: false 
+      });
     }
 
     const token = authHeader.substring(7);
     const payload = AuthService.verifyAccessToken(token);
     if (!payload) {
-      return res.json({ authenticated: false });
+      return res.status(200).json({ 
+        success: false,  
+        authenticated: false 
+      });
     }
 
     const user = await User.findById(payload.userId);
     if (!user || !user.isActive) {
-      return res.json({ authenticated: false });
+      return res.status(200).json({ 
+        success: false,  
+        authenticated: false 
+      });
     }
 
-    res.json({
+    res.status(200).json({
+      success: true,  
       authenticated: true,
       user: {
         id: user._id,
@@ -210,6 +263,9 @@ export const getAuthStatus = async (req: Request, res: Response) => {
       }
     });
   } catch (error) {
-    res.json({ authenticated: false });
+    res.status(200).json({ 
+      success: false,  // 
+      authenticated: false 
+    });
   }
 };
