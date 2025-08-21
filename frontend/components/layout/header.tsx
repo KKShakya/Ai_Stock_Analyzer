@@ -4,12 +4,13 @@
 import { useState } from "react";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { 
-  Search, 
-  Bell, 
-  Menu, 
-  User, 
-  Settings, 
+import pngImage from '@/public/avatars/Avatar-1.png'
+import {
+  Search,
+  Bell,
+  Menu,
+  User,
+  Settings,
   LogOut,
   Zap,
   Crown
@@ -47,12 +48,12 @@ export default function Header({ onMenuToggle }: HeaderProps) {
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false); // ← Added
   const pathname = usePathname();
   const pageTitle = usePageTitle();
-  
+
   // Store hooks
   const { isAuthenticated, user, openLoginModal, logout } = useAuthStore();
   const { openSearch } = useSearchStore();
   const { unreadCount, togglePanel } = useNotificationStore();
-  
+
   // Enable Alt+S search shortcut
   useSearchKeyboard();
 
@@ -84,7 +85,7 @@ export default function Header({ onMenuToggle }: HeaderProps) {
   return (
     <>
       <header className="h-16 flex items-center justify-between px-4 sm:px-6 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-40">
-        
+
         {/* Left Section */}
         <div className="flex items-center gap-3 sm:gap-4 flex-1">
           {/* Mobile Menu Toggle - Updated */}
@@ -97,7 +98,7 @@ export default function Header({ onMenuToggle }: HeaderProps) {
           >
             <Menu className="h-5 w-5" />
           </Button>
-          
+
           {/* Dynamic Page Title */}
           <div className="flex items-center gap-2">
             <h1 className="text-lg sm:text-xl font-semibold text-foreground">
@@ -112,7 +113,7 @@ export default function Header({ onMenuToggle }: HeaderProps) {
         </div>
 
         {/* Center Section - Modern Cylindrical Search */}
-        <motion.div 
+        <motion.div
           className="flex-1 max-w-md mx-8 hidden md:block"
           whileHover={{ scale: 1.02 }}
           transition={{ duration: 0.2 }}
@@ -125,12 +126,12 @@ export default function Header({ onMenuToggle }: HeaderProps) {
             <div className="flex items-center gap-3 px-4 h-full">
               {/* Search Icon */}
               <Search className="h-4 w-4 text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300 transition-colors" />
-              
+
               {/* Search Text */}
               <span className="flex-1 text-left text-sm text-gray-500 dark:text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-300 transition-colors">
                 Search stocks, indices...
               </span>
-              
+
               {/* Keyboard Shortcut */}
               <div className="flex items-center gap-1 px-2 py-1 rounded-md bg-gray-100/80 dark:bg-gray-700/80 border border-gray-200/50 dark:border-gray-600/50">
                 <span className="text-xs font-medium text-gray-500 dark:text-gray-400">Alt</span>
@@ -138,7 +139,7 @@ export default function Header({ onMenuToggle }: HeaderProps) {
                 <span className="text-xs font-medium text-gray-500 dark:text-gray-400">S</span>
               </div>
             </div>
-            
+
             {/* Subtle gradient overlay on hover */}
             <div className="absolute inset-0 rounded-full bg-gradient-to-r from-blue-50/0 via-blue-50/50 to-cyan-50/0 dark:from-blue-950/0 dark:via-blue-950/50 dark:to-cyan-950/0 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
           </motion.button>
@@ -146,7 +147,7 @@ export default function Header({ onMenuToggle }: HeaderProps) {
 
         {/* Right Section */}
         <div className="flex items-center gap-2 sm:gap-4 flex-1 justify-end">
-          
+
           {/* Mobile Search Button */}
           <Button
             variant="ghost"
@@ -159,7 +160,7 @@ export default function Header({ onMenuToggle }: HeaderProps) {
 
           {/* Usage Indicator (for authenticated users) */}
           {isAuthenticated && user && (
-            <motion.div 
+            <motion.div
               className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950 dark:to-emerald-950 border border-green-200/50 dark:border-green-800/50"
               whileHover={{ scale: 1.02 }}
             >
@@ -170,7 +171,7 @@ export default function Header({ onMenuToggle }: HeaderProps) {
               <span className="text-xs text-muted-foreground">calls</span>
             </motion.div>
           )}
-          
+
           {/* Enhanced Notifications Bell */}
           <motion.div className="relative whileHover={{ scale: 1.05 }}
                whileTap={{ scale: 0.95 }}">
@@ -180,10 +181,10 @@ export default function Header({ onMenuToggle }: HeaderProps) {
               className="relative hover:bg-gray-100/80 dark:hover:bg-gray-800/80 hover:shadow-md transition-all duration-200 rounded-full"
               onClick={togglePanel}
               aria-label="Notifications"
-              
+
             >
               <Bell className="h-5 w-5" />
-              
+
               {/* Custom Red Notification Badge */}
               {unreadCount > 0 && (
                 <motion.div
@@ -213,12 +214,25 @@ export default function Header({ onMenuToggle }: HeaderProps) {
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                 >
-                  <Avatar className="h-9 w-9 ring-2 ring-primary/20 hover:ring-primary/40 transition-all duration-200 shadow-lg">
-                    <AvatarImage src={user.avatar} alt={user.name} />
-                    <AvatarFallback className="bg-gradient-to-br from-blue-500 to-cyan-500 text-white text-sm font-semibold">
-                      {getUserInitials(user.name)}
-                    </AvatarFallback>
-                  </Avatar>
+
+                  <div className="relative">
+                    <img
+                      src={user.avatar || "/avatars/Avatar-1.png"}
+                      alt={user.name}
+                      className="h-9 w-9 rounded-full object-cover transition-all duration-200
+                             shadow-lg shadow-black/20
+                             ring-1 ring-black/10 
+                              hover:ring-1 hover:ring-primary/40
+                             dark:ring-white/20 dark:shadow-white/10"
+                      style={{
+                        filter: 'drop-shadow(0 0 0 1px rgba(255,255,255,0.5))'
+                      }}
+                    />
+                    <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-green-500 rounded-full border-2 border-white shadow-sm" />
+                  </div>
+
+
+
                 </motion.button>
               </DropdownMenuTrigger>
 
@@ -229,12 +243,23 @@ export default function Header({ onMenuToggle }: HeaderProps) {
               >
                 {/* User Info */}
                 <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
-                  <Avatar className="h-10 w-10">
-                    <AvatarImage src={user.avatar} alt={user.name} />
-                    <AvatarFallback className="bg-gradient-to-br from-blue-500 to-cyan-500 text-white">
-                      {getUserInitials(user.name)}
-                    </AvatarFallback>
-                  </Avatar>
+                  <div className="relative">
+                    <img
+                      src={user.avatar || "/avatars/Avatar-1.png"}
+                      alt={user.name}
+                      className="h-9 w-9 rounded-full object-cover transition-all duration-200
+               shadow-lg shadow-black/20
+               ring-1 ring-black/10 
+               hover:ring-1 hover:ring-primary/40
+               dark:ring-white/20 dark:shadow-white/10"
+                      style={{
+                        filter: 'drop-shadow(0 0 0 1px rgba(255,255,255,0.5))'
+                      }}
+                    />
+                    <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-green-500 rounded-full border-2 border-white shadow-sm" />
+                  </div>
+
+
                   <div className="flex-1 min-w-0">
                     <p className="font-medium text-sm truncate">{user.name}</p>
                     <p className="text-xs text-muted-foreground truncate">{user.email}</p>
@@ -246,12 +271,12 @@ export default function Header({ onMenuToggle }: HeaderProps) {
                 </div>
 
                 <DropdownMenuSeparator />
-                
+
                 <DropdownMenuItem className="rounded-md cursor-pointer hover:bg-accent/50">
                   <User className="mr-2 h-4 w-4" />
                   Profile
                 </DropdownMenuItem>
-                
+
                 <DropdownMenuItem className="rounded-md cursor-pointer hover:bg-accent/50">
                   <Settings className="mr-2 h-4 w-4" />
                   Settings
@@ -268,8 +293,8 @@ export default function Header({ onMenuToggle }: HeaderProps) {
                 )}
 
                 <DropdownMenuSeparator />
-                
-                <DropdownMenuItem 
+
+                <DropdownMenuItem
                   className="rounded-md cursor-pointer text-red-600 hover:bg-red-50 dark:hover:bg-red-950 focus:text-red-600"
                   onClick={logout}
                 >
@@ -291,12 +316,12 @@ export default function Header({ onMenuToggle }: HeaderProps) {
                 className="absolute inset-0 bg-gradient-to-r from-blue-500/10 via-cyan-500/10 to-blue-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
                 layoutId="loginGradient"
               />
-              
+
               {/* Text */}
               <span className="relative z-10 text-sm font-small group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-200">
                 Login
               </span>
-              
+
               {/* Subtle shine effect */}
               <motion.div
                 className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-in-out"
@@ -308,14 +333,14 @@ export default function Header({ onMenuToggle }: HeaderProps) {
       </header>
 
       {/* Mobile Sidebar - Now Connected! */}
-      <MobileSidebar 
-        isOpen={isMobileSidebarOpen} 
-        onClose={() => setIsMobileSidebarOpen(false)} 
+      <MobileSidebar
+        isOpen={isMobileSidebarOpen}
+        onClose={() => setIsMobileSidebarOpen(false)}
       />
 
       {/* Search Modal */}
       <SearchModal />
-      
+
       {/* Notification Panel */}
       <NotificationPanel />
     </>
