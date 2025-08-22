@@ -44,6 +44,30 @@ router.use(
   })
 );
 
+router.use(
+  "/user",
+  createProxyMiddleware({
+    target: `${USER_SERVICE_URL}/user`,
+    changeOrigin: true,
+    timeout: 30000,
+    proxyTimeout: 30000,
+    logLevel: "debug",
+
+    on: {
+      error: (err: Error, req: Request, res: Response) => {
+        console.error("User Service Proxy Error:", err.message);
+        res.writeHead(500, { "Content-Type": "application/json" });
+        res.end(
+          JSON.stringify({
+            error: "Failed to connect to User Service",
+            details: err.message,
+          })
+        );
+      },
+    },
+  })
+);
+
 // Proxy for market overview data
 router.get("/market/overview", async (req, res) => {
   try {

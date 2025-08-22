@@ -10,10 +10,14 @@ import { requestLogger } from './middlewares/logger';
 import { errorHandler, notFoundHandler } from './middlewares/errorHandler';
 import authRoutes from './routes/auth';
 import userRoutes from './routes/user';
+import onboardingRoutes from './routes/onboarding';
+
+// Initialize Express app
 
 const app = express();
 
 // Security
+
 app.use(helmet());
 app.use(cors({
   origin: [config.urls.frontend, config.urls.apiGateway],
@@ -44,6 +48,7 @@ mongoose.connect(config.database.uri)
     process.exit(1);
   });
 
+
 // Health check
 app.get('/health', (req, res) => {
   res.json({
@@ -53,9 +58,18 @@ app.get('/health', (req, res) => {
   });
 });
 
+app.use((req, res, next) => {
+  console.log('Request received:');
+  console.log(`${req.method} ${req.path}`);
+  console.log('Headers:', req.headers);
+  next();
+});
+
+
 // Routes
 app.use('/auth', authRoutes);
-app.use('/user', userRoutes);
+app.use('/user',onboardingRoutes);
+
 
 // Error handlers (must be last)
 app.use(notFoundHandler);
