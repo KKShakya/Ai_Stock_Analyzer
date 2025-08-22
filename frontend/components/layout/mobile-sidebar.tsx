@@ -1,7 +1,7 @@
 // components/layout/mobile-sidebar.tsx
 "use client";
 
-import { Fragment } from "react";
+import { Fragment, useMemo } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
@@ -12,7 +12,12 @@ import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/hooks/use-auth";
 
 // Navigation data
-import { NAVIGATION_ITEMS, HELP_ITEM, type NavItem } from "@/lib/navigation";
+import { 
+  NAVIGATION_ITEMS, 
+  HELP_ITEM, 
+  getNavigationForRoute,
+  type NavItem 
+} from "@/lib/navigation";
 
 // UI Components
 import { Button } from "@/components/ui/button";
@@ -26,6 +31,12 @@ interface MobileSidebarProps {
 export default function MobileSidebar({ isOpen, onClose }: MobileSidebarProps) {
   const pathname = usePathname();
   const { isAuthenticated, user, openLoginModal } = useAuthStore();
+
+  // Get route-specific navigation
+  const { mainNavigation, proItems, helpItem } = useMemo(() => 
+    getNavigationForRoute(pathname), 
+    [pathname]
+  );
 
   // Check if user can access a nav item
   const canAccess = (item: NavItem) => {
@@ -50,7 +61,6 @@ export default function MobileSidebar({ isOpen, onClose }: MobileSidebarProps) {
     
     if (item.requiresPro && user?.plan === 'free') {
       e.preventDefault();
-      // TODO: Open upgrade modal
       console.log('Upgrade to Pro required');
       onClose();
       return;
@@ -93,11 +103,6 @@ export default function MobileSidebar({ isOpen, onClose }: MobileSidebarProps) {
             {item.comingSoon && (
               <Badge variant="secondary" className="text-xs">Soon</Badge>
             )}
-            {/* {isLocked && (
-              <Badge variant="outline" className="text-xs bg-amber-50 text-amber-700 border-amber-200">
-                Login
-              </Badge>
-            )} */}
             {isProLocked && (
               <Badge className="text-xs bg-gradient-to-r from-yellow-400 to-orange-400 text-white">
                 Pro
@@ -144,15 +149,24 @@ export default function MobileSidebar({ isOpen, onClose }: MobileSidebarProps) {
               </Button>
             </div>
 
-            {/* Navigation */}
+            {/* Navigation - Now route-aware */}
             <div className="p-4 space-y-2">
-              {NAVIGATION_ITEMS.map(renderNavItem)}
+              {/* Main navigation items */}
+              {mainNavigation.map(renderNavItem)}
+              
+              {/* Pro items if any */}
+              {proItems.length > 0 && (
+                <>
+                  <div className="border-t border-border my-4" />
+                  {proItems.map(renderNavItem)}
+                </>
+              )}
               
               {/* Separator */}
               <div className="border-t border-border my-4" />
               
               {/* Help */}
-              {renderNavItem(HELP_ITEM)}
+              {renderNavItem(helpItem)}
             </div>
 
             {/* User Status */}

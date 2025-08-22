@@ -4,7 +4,6 @@
 import { useState } from "react";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import pngImage from '@/public/avatars/Avatar-1.png'
 import {
   Search,
   Bell,
@@ -17,7 +16,6 @@ import {
 } from "lucide-react";
 
 // UI Components
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -93,7 +91,7 @@ export default function Header({ onMenuToggle }: HeaderProps) {
             variant="ghost"
             size="icon"
             className="lg:hidden"
-            onClick={handleMenuToggle} // ← Updated
+            onClick={handleMenuToggle} 
             aria-label="Toggle menu"
           >
             <Menu className="h-5 w-5" />

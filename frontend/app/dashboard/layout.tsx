@@ -14,8 +14,8 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
         <Sidebar />
         <div className="flex-1 flex min-h-screen flex-col">
           <Header />
-          <main className="px-6 py-6 md:px-8 lg:px-10">
-            <div className="mx-auto w-full max-w-[1400px]">{children}</div>
+          <main className="px-4 py-6"> 
+            <div className="w-full">{children}</div> 
           </main>
         </div>
       </div>

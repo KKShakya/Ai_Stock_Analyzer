@@ -10,8 +10,14 @@ import { cn } from "@/lib/utils";
 // Hooks and stores
 import { useAuthStore } from "@/hooks/use-auth";
 
-// Navigation data
-import { NAVIGATION_ITEMS, HELP_ITEM, PRO_ITEMS, type NavItem } from "@/lib/navigation";
+// Navigation data - Import the helper function
+import { 
+  NAVIGATION_ITEMS, 
+  HELP_ITEM, 
+  PRO_ITEMS, 
+  getNavigationForRoute,
+  type NavItem 
+} from "@/lib/navigation";
 
 // UI Components
 import { Button } from "@/components/ui/button";
@@ -32,6 +38,12 @@ export default function Sidebar({ className }: SidebarProps) {
   const pathname = usePathname();
   const { isAuthenticated, user, openLoginModal } = useAuthStore();
 
+  // Get route-specific navigation
+  const { mainNavigation, proItems, helpItem } = useMemo(() => 
+    getNavigationForRoute(pathname), 
+    [pathname]
+  );
+
   // Check if user can access a nav item
   const canAccess = (item: NavItem) => {
     if (item.requiresAuth && !isAuthenticated) return false;
@@ -39,35 +51,34 @@ export default function Sidebar({ className }: SidebarProps) {
     return true;
   };
 
-  // Get appropriate styling for nav items - FIXED VERSION
+  // Get appropriate styling for nav items
   const getItemStyles = (item: NavItem, isActive: boolean) => {
     const canUserAccess = canAccess(item);
     const isLocked = item.requiresAuth && !isAuthenticated;
     const isProLocked = item.requiresPro && user?.plan === 'free';
     
     return cn(
-      // Base styling - keeping your padding/margin intact
+      // Base styling
       "w-full flex items-center gap-4 py-3 px-3 rounded-xl transition-all duration-500 group relative",
-      "transform-gpu", // Hardware acceleration for smoother animations
+      "transform-gpu",
       
-      // Modern hover effects - NO MORE BORDERS!
+      // Modern hover effects
       canUserAccess && [
-        // Smooth background transition with soft glow
         "hover:bg-gradient-to-r hover:from-primary/5 hover:to-primary/10",
         "hover:shadow-lg hover:shadow-primary/10",
-        "hover:scale-[1.01]", // Very subtle scale on hover
-        "active:scale-[0.99]", // Gentle press feedback
+        "hover:scale-[1.01]",
+        "active:scale-[0.99]",
       ],
       
-      // Active state - modern gradient with soft shadow
+      // Active state
       isActive && canUserAccess && [
         "bg-gradient-to-r from-primary/10 to-primary/5",
         "text-primary",
         "shadow-lg shadow-primary/15",
-        "backdrop-blur-sm", // Modern glassmorphism
+        "backdrop-blur-sm",
       ],
       
-      // Locked states - subtle opacity change only
+      // Locked states
       (isLocked || isProLocked) && [
         "opacity-60 cursor-pointer",
         "hover:opacity-80 hover:bg-muted/20 hover:shadow-md hover:shadow-black/5",
@@ -93,7 +104,6 @@ export default function Sidebar({ className }: SidebarProps) {
     
     if (item.requiresPro && user?.plan === 'free') {
       e.preventDefault();
-      // TODO: Open upgrade modal
       console.log('Upgrade to Pro required');
       return;
     }
@@ -112,11 +122,10 @@ export default function Sidebar({ className }: SidebarProps) {
         onClick={(e) => handleItemClick(item, e)}
         className="block"
       >
-        {/* Add motion wrapper for smooth animations */}
         <motion.div 
           className={getItemStyles(item, isActive)}
           whileHover={{ 
-            x: isHovered ? 4 : 0, // Subtle slide effect when expanded
+            x: isHovered ? 4 : 0,
             transition: { duration: 0.3, ease: [0.23, 1, 0.32, 1] }
           }}
           whileTap={{ 
@@ -135,16 +144,13 @@ export default function Sidebar({ className }: SidebarProps) {
             >
               <item.icon className={cn(
                 "h-5 w-5 transition-all duration-300",
-                // Active state with subtle glow
                 isActive && canUserAccess && "text-primary drop-shadow-sm",
-                // Hover state
                 canUserAccess && "group-hover:text-primary group-hover:drop-shadow-sm",
-                // Default state
                 !isActive && canUserAccess && "text-muted-foreground"
               )} />
             </motion.div>
             
-            {/* Pro indicator - keeping your existing design but with better animation */}
+            {/* Pro indicator */}
             {isProLocked && (
               <motion.div
                 initial={{ scale: 0, opacity: 0 }}
@@ -157,11 +163,10 @@ export default function Sidebar({ className }: SidebarProps) {
             )}
           </div>
 
-          {/* Label with your existing animations - just enhanced */}
+          {/* Label */}
           <motion.span
             className={cn(
               "text-sm font-medium select-none transition-all duration-300",
-              // Improved text styling
               isActive && canUserAccess && "text-primary font-semibold",
               !isActive && canUserAccess && "group-hover:text-foreground",
               isHovered ? "opacity-100 ml-1 scale-100" : "opacity-0 ml-0 scale-90"
@@ -173,7 +178,7 @@ export default function Sidebar({ className }: SidebarProps) {
             {item.name}
           </motion.span>
 
-          {/* Enhanced badges with smoother animations */}
+          {/* Enhanced badges */}
           {isHovered && (
             <motion.div 
               className="ml-auto flex items-center gap-1"
@@ -198,7 +203,7 @@ export default function Sidebar({ className }: SidebarProps) {
             </motion.div>
           )}
 
-          {/* Active item indicator - modern left border */}
+          {/* Active item indicator */}
           {isActive && canUserAccess && (
             <motion.div
               layoutId="activeIndicator"
@@ -210,7 +215,7 @@ export default function Sidebar({ className }: SidebarProps) {
       </Link>
     );
 
-    // Wrap with tooltip for collapsed state - enhanced tooltip styling
+    // Wrap with tooltip for collapsed state
     if (!isHovered && (isLocked || isProLocked || item.comingSoon)) {
       return (
         <TooltipProvider key={item.name}>
@@ -250,7 +255,6 @@ export default function Sidebar({ className }: SidebarProps) {
     <motion.aside
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
-      // Smooth width transition
       animate={{ width: isHovered ? 240 : 60 }}
       transition={{ duration: 0.5, ease: [0.23, 1, 0.32, 1] }}
       className={cn(
@@ -265,14 +269,12 @@ export default function Sidebar({ className }: SidebarProps) {
         "flex items-center w-full border-b border-border/50 min-h-[64px] transition-all duration-500",
         isHovered ? "justify-start px-3" : "justify-start px-2"
       )}>
-        {/* Enhanced logo with subtle glow */}
         <motion.div 
           className="w-10 h-10 flex items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 text-white font-bold text-lg shadow-lg flex-shrink-0 relative"
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
         >
           A
-          {/* Subtle glow effect */}
           <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 opacity-30 blur-md -z-10" />
         </motion.div>
         
@@ -290,26 +292,26 @@ export default function Sidebar({ className }: SidebarProps) {
         </motion.span>
       </div>
 
-      {/* Main Navigation */}
+      {/* Main Navigation - Now route-aware */}
       <nav className="flex-1 flex flex-col gap-1 mt-4 w-full px-2">
-        {NAVIGATION_ITEMS.map((item, index) => renderNavItem(item, index))}
+        {mainNavigation.map((item, index) => renderNavItem(item, index))}
       </nav>
 
-      {/* Pro Features Section */}
-      {PRO_ITEMS.length > 0 && (
+      {/* Pro Features Section - Now route-aware */}
+      {proItems.length > 0 && (
         <div className="w-full px-2 mb-4">
           <div className="border-t border-border/50 pt-4">
-            {PRO_ITEMS.map((item, index) => renderNavItem(item, index + NAVIGATION_ITEMS.length))}
+            {proItems.map((item, index) => renderNavItem(item, index + mainNavigation.length))}
           </div>
         </div>
       )}
 
       {/* Help Section */}
       <div className="p-2 border-t border-border/50 w-full">
-        {renderNavItem(HELP_ITEM, NAVIGATION_ITEMS.length + PRO_ITEMS.length)}
+        {renderNavItem(helpItem, mainNavigation.length + proItems.length)}
       </div>
 
-      {/* User Status Indicator - enhanced */}
+      {/* User Status Indicator */}
       {isAuthenticated && user && isHovered && (
         <motion.div
           initial={{ opacity: 0, y: 10 }}
