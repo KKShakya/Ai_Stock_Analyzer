@@ -69,7 +69,8 @@ export const login = async (req: Request, res: Response) => {
         avatar: user.avatar,
         plan: user.plan,
         apiCallsUsed: user.apiCallsUsed,
-        apiCallsLimit: user.apiCallsLimit
+        apiCallsLimit: user.apiCallsLimit,
+        onboardingCompleted: user.onboardingCompleted, 
       },
       accessToken: tokens.accessToken
     });
@@ -147,7 +148,8 @@ export const googleCallback = async (req: Request, res: Response) => {
           isVerified: true,
           plan: 'free',
           apiCallsUsed: 0,
-          apiCallsLimit: 1000
+          apiCallsLimit: 1000,
+  
         });
         await user.save();
         isNewUser = true;
@@ -259,7 +261,9 @@ export const getAuthStatus = async (req: Request, res: Response) => {
         avatar: user.avatar,
         plan: user.plan,
         apiCallsUsed: user.apiCallsUsed,
-        apiCallsLimit: user.apiCallsLimit
+        apiCallsLimit: user.apiCallsLimit,
+        onboardingCompleted: user.onboardingCompleted,
+        
       }
     });
   } catch (error) {
