@@ -58,12 +58,7 @@ app.get('/health', (req, res) => {
   });
 });
 
-app.use((req, res, next) => {
-  console.log('Request received:');
-  console.log(`${req.method} ${req.path}`);
-  console.log('Headers:', req.headers);
-  next();
-});
+
 
 
 // Routes

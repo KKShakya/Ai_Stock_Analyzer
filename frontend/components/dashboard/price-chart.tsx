@@ -1,11 +1,10 @@
-// components/dashboard/price-chart.tsx
 "use client";
 
 import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { 
-  TrendingUp, 
-  TrendingDown, 
+import {
+  TrendingUp,
+  TrendingDown,
   BarChart3,
   Maximize2,
   RefreshCw,
@@ -25,7 +24,7 @@ interface PriceChartProps {
 export default function PriceChart({ symbol, className, showControls = true }: PriceChartProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  
+
   const {
     chartData,
     isLoading,
@@ -34,7 +33,7 @@ export default function PriceChart({ symbol, className, showControls = true }: P
     fetchChartData
   } = usePriceChartStore();
 
-  const [hoveredPoint, setHoveredPoint] = useState<{x: number, y: number, price: number, time: string} | null>(null);
+  const [hoveredPoint, setHoveredPoint] = useState<{ x: number, y: number, price: number, time: string } | null>(null);
   const [canvasSize, setCanvasSize] = useState({ width: 0, height: 0 });
 
   const timeframes = [
@@ -86,20 +85,20 @@ export default function PriceChart({ symbol, className, showControls = true }: P
     if (!data) return;
 
     ctx.clearRect(0, 0, size.width, size.height);
-    
+
     const padding = { top: 20, right: 20, bottom: 40, left: 60 };
     const chartWidth = size.width - padding.left - padding.right;
     const chartHeight = size.height - padding.top - padding.bottom;
-    
+
     const prices = data.data.map(d => d.price);
     const minPrice = Math.min(...prices);
     const maxPrice = Math.max(...prices);
     const priceRange = maxPrice - minPrice;
-    
+
     // Create gradient
     const gradient = ctx.createLinearGradient(0, padding.top, 0, size.height - padding.bottom);
     const isPositive = data.changePercent >= 0;
-    
+
     if (isPositive) {
       gradient.addColorStop(0, 'rgba(34, 197, 94, 0.3)');
       gradient.addColorStop(1, 'rgba(34, 197, 94, 0.05)');
@@ -111,7 +110,7 @@ export default function PriceChart({ symbol, className, showControls = true }: P
     // Draw grid lines
     ctx.strokeStyle = 'rgba(156, 163, 175, 0.2)';
     ctx.lineWidth = 1;
-    
+
     // Horizontal grid lines
     for (let i = 0; i <= 4; i++) {
       const y = padding.top + (chartHeight / 4) * i;
@@ -135,14 +134,14 @@ export default function PriceChart({ symbol, className, showControls = true }: P
     data.data.forEach((point, index) => {
       const x = padding.left + (index / (data.data.length - 1)) * chartWidth;
       const y = padding.top + (1 - (point.price - minPrice) / priceRange) * chartHeight;
-      
+
       if (index === 0) {
         ctx.moveTo(x, y);
       } else {
         ctx.lineTo(x, y);
       }
     });
-    
+
     // Close the path for area fill
     ctx.lineTo(size.width - padding.right, size.height - padding.bottom);
     ctx.lineTo(padding.left, size.height - padding.bottom);
@@ -154,11 +153,11 @@ export default function PriceChart({ symbol, className, showControls = true }: P
     ctx.beginPath();
     ctx.strokeStyle = isPositive ? 'rgb(34, 197, 94)' : 'rgb(239, 68, 68)';
     ctx.lineWidth = 2;
-    
+
     data.data.forEach((point, index) => {
       const x = padding.left + (index / (data.data.length - 1)) * chartWidth;
       const y = padding.top + (1 - (point.price - minPrice) / priceRange) * chartHeight;
-      
+
       if (index === 0) {
         ctx.moveTo(x, y);
       } else {
@@ -171,7 +170,7 @@ export default function PriceChart({ symbol, className, showControls = true }: P
     ctx.fillStyle = 'rgb(107, 114, 128)';
     ctx.font = '12px Inter, system-ui, sans-serif';
     ctx.textAlign = 'right';
-    
+
     for (let i = 0; i <= 4; i++) {
       const price = maxPrice - (priceRange / 4) * i;
       const y = padding.top + (chartHeight / 4) * i + 4;
@@ -191,12 +190,12 @@ export default function PriceChart({ symbol, className, showControls = true }: P
     const labelCount = 6;
     const step = Math.floor(data.length / (labelCount - 1));
     const labels = [];
-    
+
     for (let i = 0; i < labelCount; i++) {
       const index = Math.min(i * step, data.length - 1);
       const timestamp = data[index].timestamp;
       const date = new Date(timestamp);
-      
+
       let label = '';
       switch (timeframe) {
         case '1D':
@@ -217,7 +216,7 @@ export default function PriceChart({ symbol, className, showControls = true }: P
       }
       labels.push(label);
     }
-    
+
     return labels;
   };
 
@@ -259,7 +258,7 @@ export default function PriceChart({ symbol, className, showControls = true }: P
       <div className="h-full flex flex-col">
         {/* Price Header */}
         {chartData && (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             className="p-4 border-b border-border/50 bg-gradient-to-r from-background/80 to-background/40 backdrop-blur-sm"
@@ -276,7 +275,7 @@ export default function PriceChart({ symbol, className, showControls = true }: P
                   </span>
                 </div>
               </div>
-              
+
               {showControls && (
                 <div className="flex items-center gap-2">
                   <motion.button
@@ -288,7 +287,7 @@ export default function PriceChart({ symbol, className, showControls = true }: P
                   >
                     <RefreshCw className={`h-4 w-4 group-hover:rotate-180 transition-transform duration-300 ${isLoading ? 'animate-spin' : ''}`} />
                   </motion.button>
-                  
+
                   <motion.button
                     className="w-8 h-8 rounded-full bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border border-border/50 shadow-sm hover:shadow-md transition-all duration-300 flex items-center justify-center group"
                     whileHover={{ scale: 1.05 }}
@@ -304,7 +303,7 @@ export default function PriceChart({ symbol, className, showControls = true }: P
 
         {/* Timeframe Controls */}
         {showControls && (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
@@ -378,7 +377,7 @@ export default function PriceChart({ symbol, className, showControls = true }: P
 
         {/* Volume Indicator */}
         {chartData && (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}

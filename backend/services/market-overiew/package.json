@@ -9,10 +9,14 @@
     "start": "node dist/index.js"
   },
   "dependencies": {
+    "axios": "^1.11.0",
     "cors": "2.8.5",
     "dotenv": "16.4.5",
     "express": "4.19.2",
-    "helmet": "7.1.0"
+    "helmet": "7.1.0",
+    "redis": "^5.8.2",
+    "socket.io": "^4.8.1",
+    "upstox-js-sdk": "^2.19.0"
   },
   "devDependencies": {
     "@types/cors": "2.8.17",

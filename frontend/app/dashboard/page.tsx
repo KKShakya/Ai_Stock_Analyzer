@@ -1,14 +1,11 @@
-// app/dashboard/page.tsx - UPDATED VERSION
 "use client";
 
-import { useEffect, useState } from "react";
-import { TrendingUp, BarChart3, Newspaper, Brain } from "lucide-react";
+import {BarChart3, Newspaper } from "lucide-react";
 import SectionCard from "@/components/ui/section-card";
 import DashboardShell from "@/components/dashboard/dashboard-shell";
 import MarketOverview from "@/components/dashboard/market-overview";
 import OISentimentCard from "../components/PCRData";
 import NewsFeed from "../components/newsFeed";
-import AIStrategyChatCard from "../components/aiStrategyChart";
 import MarketChartCard from "../components/marketChart";
 import WatchlistCard from "@/components/dashboard/watchlist-card";
 import AIChatCard from "@/components/dashboard/ai-chat";
