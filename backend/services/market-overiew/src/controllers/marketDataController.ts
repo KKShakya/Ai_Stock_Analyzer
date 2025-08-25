@@ -329,6 +329,17 @@ async getMarketOverview(req: Request, res: Response): Promise<void> {
   }
 }
 
+//GET /api/market/chart?index=NIFTY 50
+async getChartData(req: Request, res: Response): Promise<void> {
+  
+   res.json({
+        success: true,
+        data: "kya hai",
+        cached: false
+      });
+}
+
+
 private getDisplayName(symbol: string): string {
   const nameMap = {
     'NIFTY': 'NIFTY 50',

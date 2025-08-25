@@ -9,6 +9,7 @@ import NewsFeed from "../components/newsFeed";
 import MarketChartCard from "../components/marketChart";
 import WatchlistCard from "@/components/dashboard/watchlist-card";
 import AIChatCard from "@/components/dashboard/ai-chat";
+import PriceChart from "@/components/dashboard/price-chart";
 
 export default function DashboardPage() {
   return (
@@ -33,8 +34,8 @@ export default function DashboardPage() {
 
           {/* Left Side - Main Charts */}
           <div className="lg:col-span-2 space-y-6">
+            <PriceChart />
 
-            <MarketChartCard indices={1} />
             
             <SectionCard
               title="OI & PCR Analysis"

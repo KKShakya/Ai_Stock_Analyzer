@@ -2,39 +2,30 @@
 
 import { useEffect, useState } from "react";
 import MetricCard from "../ui/metricCard";
+import { useMarketDataFetch } from "@/hooks/useMarkteDataFetch";
 
 export default function MarketOverview() {
-  const [marketData, setMarketData] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-
+  
   const fetchMarketData = async () => {
-    try {
-      setLoading(true);
-      const response = await fetch("http://localhost:8080/api/v1/market/overview");
-      const data = await response.json();
-      
-      if (data.success) {
-        setMarketData(data);
-        setError(null);
-      } else {
-        throw new Error(data.error || 'Failed to fetch market data');
-      }
-    } catch (err) {
-      setError(err.message);
-      console.error("Market data fetch error:", err);
-    } finally {
-      setLoading(false);
+    const response = await fetch("http://localhost:8080/api/v1/market/overview");
+    const data = await response.json();
+    
+    if (data.success) {
+      return data;
+    } else {
+      throw new Error(data.error || 'Failed to fetch market data');
     }
   };
 
-  useEffect(() => {
-    fetchMarketData();
-    
-    // Auto-refresh every 30 seconds
-    const interval = setInterval(fetchMarketData, 30000);
-    return () => clearInterval(interval);
-  }, []);
+  // Use the hook - that's it! 🎯
+  const { 
+    data: marketData, 
+    loading, 
+    error, 
+    isMarketOpen, 
+    manualRefresh 
+  } = useMarketDataFetch(fetchMarketData);
+
 
   if (loading) {
     return (

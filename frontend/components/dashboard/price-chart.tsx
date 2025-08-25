@@ -1,400 +1,403 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { useRouter } from "next/navigation";
+import { motion } from "framer-motion";
+import { createChart, ColorType, LineStyle, CandlestickSeries, LineSeries } from 'lightweight-charts';
 import {
   TrendingUp,
   TrendingDown,
   BarChart3,
   Maximize2,
-  RefreshCw,
-  Activity,
-  Volume2
+  ChevronDown,
+  LineChart,
+  CandlestickChart
 } from "lucide-react";
 import SectionCard from "@/components/ui/section-card";
-import { Button } from "@/components/ui/button";
-import { usePriceChartStore } from "@/store/price-chart-store";
 
 interface PriceChartProps {
-  symbol: string;
+  symbol?: string;
   className?: string;
-  showControls?: boolean;
 }
 
-export default function PriceChart({ symbol, className, showControls = true }: PriceChartProps) {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
+export default function PriceChart({ symbol = 'NIFTY 50', className }: PriceChartProps) {
+  const router = useRouter();
+  const chartContainerRef = useRef<HTMLDivElement>(null);
+  const chart = useRef<any>(null);
+  const candlestickSeries = useRef<any>(null);
+  const lineSeries = useRef<any>(null);
 
-  const {
-    chartData,
-    isLoading,
-    selectedTimeframe,
-    setTimeframe,
-    fetchChartData
-  } = usePriceChartStore();
+  const [selectedIndex, setSelectedIndex] = useState('NIFTY 50');
+  const [showDropdown, setShowDropdown] = useState(false);
+  const [chartType, setChartType] = useState<'line' | 'candlestick'>('candlestick');
+  const [selectedTimeframe, setSelectedTimeframe] = useState('1D');
+  const [chartData, setChartData] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const [hoveredPoint, setHoveredPoint] = useState<{ x: number, y: number, price: number, time: string } | null>(null);
-  const [canvasSize, setCanvasSize] = useState({ width: 0, height: 0 });
-
-  const timeframes = [
-    { key: '1D' as const, label: '1D', description: 'Today' },
-    { key: '1W' as const, label: '1W', description: 'This Week' },
-    { key: '1M' as const, label: '1M', description: 'This Month' },
-    { key: '3M' as const, label: '3M', description: '3 Months' },
-    { key: '1Y' as const, label: '1Y', description: 'This Year' },
+  const indices = [
+    { value: 'NIFTY 50', label: 'Nifty 50' },
+    { value: 'BANKNIFTY', label: 'Bank Nifty' },
+    { value: 'SENSEX', label: 'Sensex' }
   ];
 
-  // Fetch chart data when symbol or timeframe changes
-  useEffect(() => {
-    if (symbol) {
-      fetchChartData(symbol);
-    }
-  }, [symbol, selectedTimeframe]);
+  const timeframes = [
+    { key: '1D' as const, label: '1D' },
+    { key: '1W' as const, label: '1W' },
+    { key: '1M' as const, label: '1M' },
+    { key: '1Y' as const, label: '1Y' },
+  ];
 
-  // Handle canvas resize
-  useEffect(() => {
+  // 🔥 COMPLETE MOCK DATA GENERATOR
+  const generateChartData = (symbol: string, timeframe: string, chartType: string) => {
+    
+    const dataPointsMap = {
+      '1D': 50,
+      '1W': 35,
+      '1M': 22,
+      '1Y': 52
+    };
+
+    const pointCount = dataPointsMap[timeframe as keyof typeof dataPointsMap] || 50;
+    
+    const basePrices = {
+      'NIFTY 50': 24750,
+      'BANKNIFTY': 51200,
+      'SENSEX': 81500
+    };
+    
+    const basePrice = basePrices[symbol as keyof typeof basePrices] || 24750;
+    const data = [];
+    
+    let currentPrice = basePrice;
+    const now = Math.floor(Date.now() / 1000);
+    const timeInterval = 300;
+
+    for (let i = 0; i < pointCount; i++) {
+      const timestamp = now - (pointCount - i - 1) * timeInterval;
+      
+      if (chartType === 'candlestick') {
+        const open = currentPrice;
+        const volatility = currentPrice * 0.012;
+        
+        const high = open + Math.random() * volatility;
+        const low = open - Math.random() * volatility;
+        const close = low + Math.random() * (high - low);
+        
+        data.push({
+          time: timestamp,
+          open: Math.round(open * 100) / 100,
+          high: Math.round(high * 100) / 100,
+          low: Math.round(low * 100) / 100,
+          close: Math.round(close * 100) / 100,
+        });
+        
+        currentPrice = close;
+      } else {
+        const change = (Math.random() - 0.5) * 50;
+        currentPrice += change;
+        
+        data.push({
+          time: timestamp,
+          value: Math.round(currentPrice * 100) / 100,
+        });
+      }
+    }
+
+    const firstPrice = chartType === 'candlestick' ? data[0]?.close : data[0]?.value;
+    const lastPrice = chartType === 'candlestick' ? data[data.length - 1]?.close : data[data.length - 1]?.value;
+    const change = lastPrice - firstPrice;
+    const changePercent = (change / firstPrice) * 100;
+
+    return {
+      symbol,
+      timeframe,
+      chartType,
+      data,
+      currentPrice: lastPrice,
+      change: Math.round(change * 100) / 100,
+      changePercent: Math.round(changePercent * 100) / 100,
+      lastUpdated: Date.now()
+    };
+  };
+
+  // Generate and set chart data
+  const fetchChartData = async (symbol: string, timeframe: string) => {
+    
+    setIsLoading(true);
+    
+    // Simulate loading
+    await new Promise(resolve => setTimeout(resolve, 300));
+    
+    const mockData = generateChartData(symbol, timeframe, chartType);
+    setChartData(mockData);
+    updateChart(mockData);
+    
+    setIsLoading(false);
+  };
+
+  // Initialize chart
+  // Initialize chart
+useEffect(() => {
+  
+  if (!chartContainerRef.current) {
+    return;
+  }
+
+  try {
+    chart.current = createChart(chartContainerRef.current, {
+      layout: {
+        background: { type: ColorType.Solid, color: 'transparent' },
+        textColor: '#a9adb4ff',
+      },
+      width: chartContainerRef.current.clientWidth,
+      height: 300,
+      
+      // 🔥 ENHANCED GRID - Light Gray Background Grid
+      grid: {
+        vertLines: { 
+          color: '#e4e4e4ff',        // Light gray vertical lines
+          style: LineStyle.Solid,  // Solid lines (not dashed)
+          visible: true            // Make sure they're visible
+        },
+        horzLines: { 
+          color: '#e4e4e4ff',        // Light gray horizontal lines  
+          style: LineStyle.Solid,  // Solid lines (not dashed)
+          visible: true            // Make sure they're visible
+        },
+      },
+      
+      crosshair: {
+        mode: 1,
+        // Enhanced crosshair visibility
+        vertLine: {
+          width: 1,
+          color: '#6b7280',        // Slightly darker gray for crosshair
+          style: LineStyle.Solid,
+          visible: true,
+        },
+        horzLine: {
+          width: 1,
+          color: '#6b7280',        // Slightly darker gray for crosshair
+          style: LineStyle.Solid,
+          visible: true,
+        },
+      },
+      
+      rightPriceScale: {
+        borderColor: '#4b5563',    // Border color
+        scaleMargins: { top: 0.1, bottom: 0.1 },
+        // Enhanced price scale visibility
+        textColor: '#a9adb4ff',
+
+      },
+      
+      timeScale: {
+        borderColor: '#4b5563',    // Border color
+        timeVisible: true,
+        secondsVisible: false,
+      },
+      
+      
+    });
+
+
     const handleResize = () => {
-      if (containerRef.current) {
-        const rect = containerRef.current.getBoundingClientRect();
-        setCanvasSize({ width: rect.width, height: rect.height });
+      if (chart.current && chartContainerRef.current) {
+        chart.current.applyOptions({ 
+          width: chartContainerRef.current.clientWidth 
+        });
       }
     };
 
-    handleResize();
     window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
 
-  // Draw chart
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      if (chart.current) {
+        chart.current.remove();
+      }
+    };
+  } catch (error) {
+  }
+}, []);
+
+
+  // 🔥 FIXED - Using v5 API with addSeries()
+  const updateChart = (data: any) => {
+
+    if (!chart.current) {
+      return;
+    }
+
+    if (!data?.data || !Array.isArray(data.data)) {
+      return;
+    }
+
+    try {
+      // Remove existing series
+      if (candlestickSeries.current) {
+        chart.current.removeSeries(candlestickSeries.current);
+        candlestickSeries.current = null;
+      }
+      if (lineSeries.current) {
+        chart.current.removeSeries(lineSeries.current);
+        lineSeries.current = null;
+      }
+
+      if (chartType === 'candlestick') {
+        
+        // 🔥 V5 API - Use addSeries() with CandlestickSeries
+        candlestickSeries.current = chart.current.addSeries(CandlestickSeries, {
+          upColor: '#22c55e',
+          downColor: '#ef4444',
+          borderDownColor: '#ef4444',
+          borderUpColor: '#22c55e',
+          wickDownColor: '#ef4444',
+          wickUpColor: '#22c55e',
+        });
+
+        candlestickSeries.current.setData(data.data);
+      } else {
+        
+        // 🔥 V5 API - Use addSeries() with LineSeries
+        lineSeries.current = chart.current.addSeries(LineSeries, {
+          color: data.changePercent >= 0 ? '#22c55e' : '#ef4444',
+          lineWidth: 2,
+          crosshairMarkerVisible: true,
+          crosshairMarkerRadius: 4,
+        });
+
+        lineSeries.current.setData(data.data);
+      }
+
+      chart.current.timeScale().fitContent();
+
+    } catch (error) {
+    }
+  };
+
+  // Trigger data generation
   useEffect(() => {
-    if (!chartData || !canvasRef.current || canvasSize.width === 0) return;
+    fetchChartData(selectedIndex, selectedTimeframe);
+  }, [selectedIndex, selectedTimeframe, chartType]);
 
-    const canvas = canvasRef.current;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
-    // Set canvas size
-    canvas.width = canvasSize.width * 2; // Retina display
-    canvas.height = canvasSize.height * 2;
-    ctx.scale(2, 2);
-
-    drawChart(ctx, chartData, canvasSize);
-  }, [chartData, canvasSize]);
-
-  const drawChart = (ctx: CanvasRenderingContext2D, data: typeof chartData, size: typeof canvasSize) => {
-    if (!data) return;
-
-    ctx.clearRect(0, 0, size.width, size.height);
-
-    const padding = { top: 20, right: 20, bottom: 40, left: 60 };
-    const chartWidth = size.width - padding.left - padding.right;
-    const chartHeight = size.height - padding.top - padding.bottom;
-
-    const prices = data.data.map(d => d.price);
-    const minPrice = Math.min(...prices);
-    const maxPrice = Math.max(...prices);
-    const priceRange = maxPrice - minPrice;
-
-    // Create gradient
-    const gradient = ctx.createLinearGradient(0, padding.top, 0, size.height - padding.bottom);
-    const isPositive = data.changePercent >= 0;
-
-    if (isPositive) {
-      gradient.addColorStop(0, 'rgba(34, 197, 94, 0.3)');
-      gradient.addColorStop(1, 'rgba(34, 197, 94, 0.05)');
-    } else {
-      gradient.addColorStop(0, 'rgba(239, 68, 68, 0.3)');
-      gradient.addColorStop(1, 'rgba(239, 68, 68, 0.05)');
-    }
-
-    // Draw grid lines
-    ctx.strokeStyle = 'rgba(156, 163, 175, 0.2)';
-    ctx.lineWidth = 1;
-
-    // Horizontal grid lines
-    for (let i = 0; i <= 4; i++) {
-      const y = padding.top + (chartHeight / 4) * i;
-      ctx.beginPath();
-      ctx.moveTo(padding.left, y);
-      ctx.lineTo(size.width - padding.right, y);
-      ctx.stroke();
-    }
-
-    // Vertical grid lines
-    for (let i = 0; i <= 6; i++) {
-      const x = padding.left + (chartWidth / 6) * i;
-      ctx.beginPath();
-      ctx.moveTo(x, padding.top);
-      ctx.lineTo(x, size.height - padding.bottom);
-      ctx.stroke();
-    }
-
-    // Draw area under curve
-    ctx.beginPath();
-    data.data.forEach((point, index) => {
-      const x = padding.left + (index / (data.data.length - 1)) * chartWidth;
-      const y = padding.top + (1 - (point.price - minPrice) / priceRange) * chartHeight;
-
-      if (index === 0) {
-        ctx.moveTo(x, y);
-      } else {
-        ctx.lineTo(x, y);
-      }
-    });
-
-    // Close the path for area fill
-    ctx.lineTo(size.width - padding.right, size.height - padding.bottom);
-    ctx.lineTo(padding.left, size.height - padding.bottom);
-    ctx.closePath();
-    ctx.fillStyle = gradient;
-    ctx.fill();
-
-    // Draw price line
-    ctx.beginPath();
-    ctx.strokeStyle = isPositive ? 'rgb(34, 197, 94)' : 'rgb(239, 68, 68)';
-    ctx.lineWidth = 2;
-
-    data.data.forEach((point, index) => {
-      const x = padding.left + (index / (data.data.length - 1)) * chartWidth;
-      const y = padding.top + (1 - (point.price - minPrice) / priceRange) * chartHeight;
-
-      if (index === 0) {
-        ctx.moveTo(x, y);
-      } else {
-        ctx.lineTo(x, y);
-      }
-    });
-    ctx.stroke();
-
-    // Draw price labels
-    ctx.fillStyle = 'rgb(107, 114, 128)';
-    ctx.font = '12px Inter, system-ui, sans-serif';
-    ctx.textAlign = 'right';
-
-    for (let i = 0; i <= 4; i++) {
-      const price = maxPrice - (priceRange / 4) * i;
-      const y = padding.top + (chartHeight / 4) * i + 4;
-      ctx.fillText(`$${price.toFixed(2)}`, padding.left - 10, y);
-    }
-
-    // Draw time labels
-    ctx.textAlign = 'center';
-    const timeLabels = getTimeLabels(data.data, selectedTimeframe);
-    timeLabels.forEach((label, index) => {
-      const x = padding.left + (index / (timeLabels.length - 1)) * chartWidth;
-      ctx.fillText(label, x, size.height - padding.bottom + 20);
-    });
-  };
-
-  const getTimeLabels = (data: any[], timeframe: string): string[] => {
-    const labelCount = 6;
-    const step = Math.floor(data.length / (labelCount - 1));
-    const labels = [];
-
-    for (let i = 0; i < labelCount; i++) {
-      const index = Math.min(i * step, data.length - 1);
-      const timestamp = data[index].timestamp;
-      const date = new Date(timestamp);
-
-      let label = '';
-      switch (timeframe) {
-        case '1D':
-          label = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-          break;
-        case '1W':
-          label = date.toLocaleDateString([], { weekday: 'short' });
-          break;
-        case '1M':
-        case '3M':
-          label = date.toLocaleDateString([], { month: 'short', day: 'numeric' });
-          break;
-        case '1Y':
-          label = date.toLocaleDateString([], { month: 'short' });
-          break;
-        default:
-          label = date.toLocaleDateString();
-      }
-      labels.push(label);
-    }
-
-    return labels;
-  };
-
-  const handleTimeframeChange = (timeframe: typeof selectedTimeframe) => {
-    setTimeframe(timeframe);
-  };
-
-  const handleRefresh = () => {
-    if (symbol) {
-      fetchChartData(symbol);
-    }
+  const handleExpand = () => {
+    const urlSafeSymbol = selectedIndex.replace(/\s+/g, '-').toLowerCase();
+    router.push(`/dashboard/stocks/${urlSafeSymbol}?timeframe=${selectedTimeframe}&type=${chartType}&symbol=${encodeURIComponent(selectedIndex)}`);
   };
 
   const formatPrice = (price: number): string => {
-    return new Intl.NumberFormat('en-US', {
+    return new Intl.NumberFormat('en-IN', {
       style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 2,
+      currency: 'INR',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
     }).format(price);
-  };
-
-  const formatChange = (change: number, changePercent: number): { text: string; color: string; icon: any } => {
-    const isPositive = change >= 0;
-    return {
-      text: `${isPositive ? '+' : ''}${change.toFixed(2)} (${isPositive ? '+' : ''}${changePercent.toFixed(2)}%)`,
-      color: isPositive ? 'text-green-600' : 'text-red-600',
-      icon: isPositive ? TrendingUp : TrendingDown
-    };
   };
 
   return (
     <SectionCard
-      title={`${symbol} Price Chart`}
-      subtitle={chartData ? `${selectedTimeframe} • Last updated ${new Date(chartData.lastUpdated).toLocaleTimeString()}` : 'Loading...'}
+      title="Price Chart"
       icon={<BarChart3 className="h-5 w-5" />}
-      className={className}
-      contentClassName="p-0"
+      className={`${className} h-120 relative`}
+      contentClassName="p-0 flex flex-col h-full"
     >
-      <div className="h-full flex flex-col">
-        {/* Price Header */}
-        {chartData && (
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="p-4 border-b border-border/50 bg-gradient-to-r from-background/80 to-background/40 backdrop-blur-sm"
-          >
-            <div className="flex items-center justify-between">
-              <div className="flex items-baseline gap-3">
-                <span className="text-2xl font-bold text-foreground">
-                  {formatPrice(chartData.currentPrice)}
-                </span>
-                <div className={`flex items-center gap-1 ${formatChange(chartData.change, chartData.changePercent).color}`}>
-                  {formatChange(chartData.change, chartData.changePercent).icon({ className: "h-4 w-4" })}
-                  <span className="font-medium">
-                    {formatChange(chartData.change, chartData.changePercent).text}
-                  </span>
-                </div>
-              </div>
-
-              {showControls && (
-                <div className="flex items-center gap-2">
-                  <motion.button
-                    onClick={handleRefresh}
-                    disabled={isLoading}
-                    className="w-8 h-8 rounded-full bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border border-border/50 shadow-sm hover:shadow-md transition-all duration-300 flex items-center justify-center group"
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                  >
-                    <RefreshCw className={`h-4 w-4 group-hover:rotate-180 transition-transform duration-300 ${isLoading ? 'animate-spin' : ''}`} />
-                  </motion.button>
-
-                  <motion.button
-                    className="w-8 h-8 rounded-full bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border border-border/50 shadow-sm hover:shadow-md transition-all duration-300 flex items-center justify-center group"
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                  >
-                    <Maximize2 className="h-4 w-4 group-hover:scale-110 transition-transform duration-200" />
-                  </motion.button>
-                </div>
-              )}
-            </div>
-          </motion.div>
-        )}
-
-        {/* Timeframe Controls */}
-        {showControls && (
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="p-4 border-b border-border/50 bg-gradient-to-r from-background/40 to-background/20 backdrop-blur-sm"
-          >
-            <div className="flex items-center gap-2">
-              {timeframes.map((tf) => (
-                <motion.button
-                  key={tf.key}
-                  onClick={() => handleTimeframeChange(tf.key)}
-                  className={`
-                    px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 backdrop-blur-sm
-                    ${selectedTimeframe === tf.key
-                      ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg'
-                      : 'bg-white/80 dark:bg-gray-800/80 text-foreground border border-border/50 hover:shadow-md'
-                    }
-                  `}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  {tf.label}
-                </motion.button>
-              ))}
-            </div>
-          </motion.div>
-        )}
-
-        {/* Chart Container */}
-        <div className="flex-1 relative" ref={containerRef}>
-          <AnimatePresence>
-            {isLoading ? (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-background/80 to-background/40 backdrop-blur-sm"
-              >
-                <div className="flex items-center gap-3">
-                  <Activity className="h-6 w-6 text-blue-500 animate-pulse" />
-                  <span className="text-sm text-muted-foreground">Loading chart data...</span>
-                </div>
-              </motion.div>
-            ) : (
-              <motion.canvas
-                ref={canvasRef}
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.5 }}
-                className="w-full h-full"
-                style={{ width: canvasSize.width, height: canvasSize.height }}
-              />
-            )}
-          </AnimatePresence>
-
-          {/* Hover tooltip */}
-          {hoveredPoint && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="absolute bg-white/95 dark:bg-gray-800/95 backdrop-blur-md border border-border/50 rounded-2xl p-3 shadow-xl pointer-events-none"
-              style={{
-                left: hoveredPoint.x + 10,
-                top: hoveredPoint.y - 60,
-              }}
+      {/* Controls */}
+      <div className="p-3 border-b border-border/50 flex-shrink-0">
+        <div className="flex items-center justify-between mb-3">
+          {/* Index Dropdown */}
+          <div className="relative">
+            <button
+              onClick={() => setShowDropdown(!showDropdown)}
+              className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium bg-white/80 dark:bg-gray-800/80 border border-border/50 rounded-lg hover:shadow-md transition-all"
             >
-              <div className="text-sm font-medium">{formatPrice(hoveredPoint.price)}</div>
-              <div className="text-xs text-muted-foreground">{hoveredPoint.time}</div>
-            </motion.div>
-          )}
+              {indices.find(i => i.value === selectedIndex)?.label}
+              <ChevronDown className="h-3 w-3" />
+            </button>
+            
+            {showDropdown && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="absolute top-full left-0 mt-1 w-32 bg-white dark:bg-gray-800 border border-border/50 rounded-lg shadow-xl z-10"
+              >
+                {indices.map((index) => (
+                  <button
+                    key={index.value}
+                    onClick={() => {
+                      setSelectedIndex(index.value);
+                      setShowDropdown(false);
+                    }}
+                    className="w-full px-3 py-2 text-sm text-left hover:bg-gray-100 dark:hover:bg-gray-700 first:rounded-t-lg last:rounded-b-lg"
+                  >
+                    {index.label}
+                  </button>
+                ))}
+              </motion.div>
+            )}
+          </div>
+
+          {/* Chart Type Toggle */}
+          <button
+            onClick={() => setChartType(chartType === 'line' ? 'candlestick' : 'line')}
+            className="p-1.5 rounded-md bg-white/80 dark:bg-gray-800/80 border border-border/50 hover:shadow-md transition-all"
+          >
+            {chartType === 'line' ? <LineChart className="h-3 w-3" /> : <CandlestickChart className="h-3 w-3" />}
+          </button>
         </div>
 
-        {/* Volume Indicator */}
-        {chartData && (
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            className="p-4 border-t border-border/50 bg-gradient-to-r from-background/20 to-background/40 backdrop-blur-sm"
-          >
-            <div className="flex items-center justify-between text-sm">
-              <div className="flex items-center gap-2 text-muted-foreground">
-                <Volume2 className="h-4 w-4" />
-                <span>Avg Volume: {((chartData.data.reduce((sum, d) => sum + d.volume, 0) / chartData.data.length) / 1000000).toFixed(2)}M</span>
-              </div>
-              <div className="text-xs text-muted-foreground">
-                {chartData.data.length} data points
+        {/* Price & Timeframes */}
+        <div className="flex items-center justify-between">
+          {chartData && (
+            <div className="flex items-baseline gap-2">
+              <span className="text-lg font-bold">{formatPrice(chartData.currentPrice)}</span>
+              <div className={`flex items-center gap-1 ${chartData.changePercent >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                {chartData.changePercent >= 0 ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
+                <span className="text-xs font-medium">
+                  {chartData.changePercent >= 0 ? '+' : ''}{chartData.changePercent.toFixed(2)}%
+                </span>
               </div>
             </div>
-          </motion.div>
+          )}
+
+          <div className="flex gap-1">
+            {timeframes.map((tf) => (
+              <button
+                key={tf.key}
+                onClick={() => setSelectedTimeframe(tf.key)}
+                className={`px-2 py-1 text-xs rounded transition-all ${
+                  selectedTimeframe === tf.key
+                    ? 'bg-blue-500 text-white'
+                    : 'bg-white/80 dark:bg-gray-800/80 hover:shadow-sm'
+                }`}
+              >
+                {tf.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Chart Container */}
+      <div className="flex-1 relative">
+        <div ref={chartContainerRef} className="w-full h-full" />
+        
+        {isLoading && (
+          <div className="absolute inset-0 flex items-center justify-center bg-background/80">
+            <div className="animate-pulse text-sm">Loading...</div>
+          </div>
         )}
       </div>
+
+      {/* Expand Button */}
+      <motion.button
+        onClick={handleExpand}
+        className="absolute bottom-2 right-2 w-8 h-8 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg hover:shadow-xl transition-all flex items-center justify-center z-10"
+        whileHover={{ scale: 1.1 }}
+        whileTap={{ scale: 0.95 }}
+      >
+        <Maximize2 className="h-4 w-4" />
+      </motion.button>
     </SectionCard>
   );
 }

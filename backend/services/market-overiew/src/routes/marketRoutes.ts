@@ -18,6 +18,9 @@ router.get('/search', (req, res) => marketController.searchStocks(req, res));
 // Market overview
 router.get('/overview', (req, res) => marketController.getMarketOverview(req, res));
 
+//market chart data
+router.get('/chart', (req, res) => marketController.getChartData(req, res));
+
 // Health check
 router.get('/health', (req, res) => marketController.getHealth(req, res));
 

@@ -154,7 +154,7 @@ export default function WatchlistCard() {
         title="Watchlist"
         subtitle="Track your favorite stocks"
         icon={<Star className="h-5 w-5" />}
-        className="h-96"
+        className="h-120"
       >
         <div className="flex flex-col items-center justify-center h-full text-center">
           <div className="relative mb-6">
