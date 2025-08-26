@@ -39,7 +39,7 @@ export const useMarketDataFetch = (fetchFunction, options = {}) => {
       }
     }, interval);
     
-    console.log('✅ Real-time updates started (every 30 seconds)');
+    console.log('Real-time updates started (every 30 seconds)');
   }, [wrappedFetchFunction, interval, checkMarketHours]);
 
   const stopRealTimeUpdates = useCallback(() => {

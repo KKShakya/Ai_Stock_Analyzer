@@ -49,7 +49,7 @@ export default function PriceChart({ symbol = 'NIFTY 50', className }: PriceChar
 
   // 🔥 COMPLETE MOCK DATA GENERATOR
   const generateChartData = (symbol: string, timeframe: string, chartType: string) => {
-    
+
     const dataPointsMap = {
       '1D': 50,
       '1W': 35,
@@ -58,31 +58,31 @@ export default function PriceChart({ symbol = 'NIFTY 50', className }: PriceChar
     };
 
     const pointCount = dataPointsMap[timeframe as keyof typeof dataPointsMap] || 50;
-    
+
     const basePrices = {
       'NIFTY 50': 24750,
       'BANKNIFTY': 51200,
       'SENSEX': 81500
     };
-    
+
     const basePrice = basePrices[symbol as keyof typeof basePrices] || 24750;
     const data = [];
-    
+
     let currentPrice = basePrice;
     const now = Math.floor(Date.now() / 1000);
     const timeInterval = 300;
 
     for (let i = 0; i < pointCount; i++) {
       const timestamp = now - (pointCount - i - 1) * timeInterval;
-      
+
       if (chartType === 'candlestick') {
         const open = currentPrice;
         const volatility = currentPrice * 0.012;
-        
+
         const high = open + Math.random() * volatility;
         const low = open - Math.random() * volatility;
         const close = low + Math.random() * (high - low);
-        
+
         data.push({
           time: timestamp,
           open: Math.round(open * 100) / 100,
@@ -90,12 +90,12 @@ export default function PriceChart({ symbol = 'NIFTY 50', className }: PriceChar
           low: Math.round(low * 100) / 100,
           close: Math.round(close * 100) / 100,
         });
-        
+
         currentPrice = close;
       } else {
         const change = (Math.random() - 0.5) * 50;
         currentPrice += change;
-        
+
         data.push({
           time: timestamp,
           value: Math.round(currentPrice * 100) / 100,
@@ -121,105 +121,132 @@ export default function PriceChart({ symbol = 'NIFTY 50', className }: PriceChar
   };
 
   // Generate and set chart data
+  // 🔥 UPDATED - Real API Call with Proper Data Transformation
   const fetchChartData = async (symbol: string, timeframe: string) => {
-    
+    console.log('FETCHING CHART DATA:', symbol, timeframe, chartType);
     setIsLoading(true);
-    
-    // Simulate loading
-    await new Promise(resolve => setTimeout(resolve, 300));
-    
-    const mockData = generateChartData(symbol, timeframe, chartType);
-    setChartData(mockData);
-    updateChart(mockData);
-    
-    setIsLoading(false);
+
+    try {
+      // 🔥 CALL YOUR NEW CHART ENDPOINT
+      const response = await fetch(
+        `http://localhost:8080/api/v1/market/chart?symbol=${encodeURIComponent(symbol)}&timeframe=${timeframe}&type=${chartType}`
+      );
+
+      if (!response.ok) {
+        throw new Error(`API Error: ${response.status}`);
+      }
+
+      const apiData = await response.json();
+      console.log('CHART API SUCCESS:', apiData);
+
+      if (apiData.success && apiData.data) {
+        // Data is already properly formatted by backend
+        setChartData(apiData.data);
+        updateChart(apiData.data);
+        console.log(`LOADED ${apiData.data.totalPoints} candles from ${apiData.data.source}`);
+      } else {
+        throw new Error(`API returned error: ${apiData.error || 'Unknown error'}`);
+      }
+
+    } catch (error) {
+      console.warn(`API FAILED, using mock fallback:`, error);
+
+      // FALLBACK: Use mock data when API fails
+      const mockData = generateChartData(symbol, timeframe, chartType);
+      setChartData(mockData);
+      updateChart(mockData);
+      console.log('MOCK DATA LOADED');
+
+    } finally {
+      setIsLoading(false);
+    }
   };
 
+
   // Initialize chart
-  // Initialize chart
-useEffect(() => {
-  
-  if (!chartContainerRef.current) {
-    return;
-  }
+  useEffect(() => {
 
-  try {
-    chart.current = createChart(chartContainerRef.current, {
-      layout: {
-        background: { type: ColorType.Solid, color: 'transparent' },
-        textColor: '#a9adb4ff',
-      },
-      width: chartContainerRef.current.clientWidth,
-      height: 300,
-      
-      // 🔥 ENHANCED GRID - Light Gray Background Grid
-      grid: {
-        vertLines: { 
-          color: '#e4e4e4ff',        // Light gray vertical lines
-          style: LineStyle.Solid,  // Solid lines (not dashed)
-          visible: true            // Make sure they're visible
+    if (!chartContainerRef.current) {
+      return;
+    }
+
+    try {
+      chart.current = createChart(chartContainerRef.current, {
+        layout: {
+          background: { type: ColorType.Solid, color: 'transparent' },
+          textColor: '#a9adb4ff',
         },
-        horzLines: { 
-          color: '#e4e4e4ff',        // Light gray horizontal lines  
-          style: LineStyle.Solid,  // Solid lines (not dashed)
-          visible: true            // Make sure they're visible
+        width: chartContainerRef.current.clientWidth,
+        height: 300,
+
+        // 🔥 ENHANCED GRID - Light Gray Background Grid
+        grid: {
+          vertLines: {
+            color: '#e4e4e4ff',        // Light gray vertical lines
+            style: LineStyle.Solid,  // Solid lines (not dashed)
+            visible: true            // Make sure they're visible
+          },
+          horzLines: {
+            color: '#e4e4e4ff',        // Light gray horizontal lines  
+            style: LineStyle.Solid,  // Solid lines (not dashed)
+            visible: true            // Make sure they're visible
+          },
         },
-      },
-      
-      crosshair: {
-        mode: 1,
-        // Enhanced crosshair visibility
-        vertLine: {
-          width: 1,
-          color: '#6b7280',        // Slightly darker gray for crosshair
-          style: LineStyle.Solid,
-          visible: true,
+
+        crosshair: {
+          mode: 1,
+          // Enhanced crosshair visibility
+          vertLine: {
+            width: 1,
+            color: '#6b7280',        // Slightly darker gray for crosshair
+            style: LineStyle.Solid,
+            visible: true,
+          },
+          horzLine: {
+            width: 1,
+            color: '#6b7280',        // Slightly darker gray for crosshair
+            style: LineStyle.Solid,
+            visible: true,
+          },
         },
-        horzLine: {
-          width: 1,
-          color: '#6b7280',        // Slightly darker gray for crosshair
-          style: LineStyle.Solid,
-          visible: true,
+
+        rightPriceScale: {
+          borderColor: '#4b5563',    // Border color
+          scaleMargins: { top: 0.1, bottom: 0.1 },
+          // Enhanced price scale visibility
+          textColor: '#a9adb4ff',
+
         },
-      },
-      
-      rightPriceScale: {
-        borderColor: '#4b5563',    // Border color
-        scaleMargins: { top: 0.1, bottom: 0.1 },
-        // Enhanced price scale visibility
-        textColor: '#a9adb4ff',
 
-      },
-      
-      timeScale: {
-        borderColor: '#4b5563',    // Border color
-        timeVisible: true,
-        secondsVisible: false,
-      },
-      
-      
-    });
+        timeScale: {
+          borderColor: '#4b5563',    // Border color
+          timeVisible: true,
+          secondsVisible: false,
+        },
 
 
-    const handleResize = () => {
-      if (chart.current && chartContainerRef.current) {
-        chart.current.applyOptions({ 
-          width: chartContainerRef.current.clientWidth 
-        });
-      }
-    };
+      });
 
-    window.addEventListener('resize', handleResize);
 
-    return () => {
-      window.removeEventListener('resize', handleResize);
-      if (chart.current) {
-        chart.current.remove();
-      }
-    };
-  } catch (error) {
-  }
-}, []);
+      const handleResize = () => {
+        if (chart.current && chartContainerRef.current) {
+          chart.current.applyOptions({
+            width: chartContainerRef.current.clientWidth
+          });
+        }
+      };
+
+      window.addEventListener('resize', handleResize);
+
+      return () => {
+        window.removeEventListener('resize', handleResize);
+        if (chart.current) {
+          chart.current.remove();
+        }
+      };
+    } catch (error) {
+    }
+  }, []);
 
 
   // 🔥 FIXED - Using v5 API with addSeries()
@@ -245,7 +272,7 @@ useEffect(() => {
       }
 
       if (chartType === 'candlestick') {
-        
+
         // 🔥 V5 API - Use addSeries() with CandlestickSeries
         candlestickSeries.current = chart.current.addSeries(CandlestickSeries, {
           upColor: '#22c55e',
@@ -258,7 +285,7 @@ useEffect(() => {
 
         candlestickSeries.current.setData(data.data);
       } else {
-        
+
         // 🔥 V5 API - Use addSeries() with LineSeries
         lineSeries.current = chart.current.addSeries(LineSeries, {
           color: data.changePercent >= 0 ? '#22c55e' : '#ef4444',
@@ -314,7 +341,7 @@ useEffect(() => {
               {indices.find(i => i.value === selectedIndex)?.label}
               <ChevronDown className="h-3 w-3" />
             </button>
-            
+
             {showDropdown && (
               <motion.div
                 initial={{ opacity: 0, y: -10 }}
@@ -365,11 +392,10 @@ useEffect(() => {
               <button
                 key={tf.key}
                 onClick={() => setSelectedTimeframe(tf.key)}
-                className={`px-2 py-1 text-xs rounded transition-all ${
-                  selectedTimeframe === tf.key
-                    ? 'bg-blue-500 text-white'
-                    : 'bg-white/80 dark:bg-gray-800/80 hover:shadow-sm'
-                }`}
+                className={`px-2 py-1 text-xs rounded transition-all ${selectedTimeframe === tf.key
+                  ? 'bg-blue-500 text-white'
+                  : 'bg-white/80 dark:bg-gray-800/80 hover:shadow-sm'
+                  }`}
               >
                 {tf.label}
               </button>
@@ -381,7 +407,7 @@ useEffect(() => {
       {/* Chart Container */}
       <div className="flex-1 relative">
         <div ref={chartContainerRef} className="w-full h-full" />
-        
+
         {isLoading && (
           <div className="absolute inset-0 flex items-center justify-center bg-background/80">
             <div className="animate-pulse text-sm">Loading...</div>
@@ -398,6 +424,12 @@ useEffect(() => {
       >
         <Maximize2 className="h-4 w-4" />
       </motion.button>
+      {/*  DATA DISCLAIMER */}
+      <div className="absolute bottom-1 left-2 z-10">
+        <div className="text-xs text-gray-500 bg-white/80 dark:bg-gray-800/80 px-2 py-1 rounded backdrop-blur-sm">
+          Historical data - Updated daily with 1-2 day delay
+        </div>
+      </div>
     </SectionCard>
   );
 }

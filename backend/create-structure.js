@@ -27,7 +27,7 @@ const files = [
 
 folders.forEach(dir => {
   fs.mkdirSync(dir, { recursive: true });
-  console.log(`✅ Created folder: ${dir}`);
+  console.log(`Created folder: ${dir}`);
 });
 
 files.forEach(file => {

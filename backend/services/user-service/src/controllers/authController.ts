@@ -167,7 +167,7 @@ export const googleCallback = async (req: Request, res: Response) => {
       maxAge: 7 * 24 * 60 * 60 * 1000
     });
 
-    // ✅ NEW: Redirect to frontend callback with token
+    // NEW: Redirect to frontend callback with token
     const redirectUrl = isNewUser 
       ? `${config.urls.frontend}/auth/callback?success=true&token=${authTokens.accessToken}&newUser=true`
       : `${config.urls.frontend}/auth/callback?success=true&token=${authTokens.accessToken}`;

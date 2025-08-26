@@ -141,7 +141,7 @@
 
 ***
 
-## 🔄 Authentication Flow Architecture
+## Authentication Flow Architecture
 
 ### **1. Registration Flow**
 
@@ -262,7 +262,7 @@ Token Refresh → Automatic renewal → Seamless user experience
 
 ***
 
-## 🔄 Error Handling Strategy
+## Error Handling Strategy
 
 ### **Layered Error Management**
 
@@ -336,7 +336,7 @@ Token Refresh → Automatic renewal → Seamless user experience
 
 ***
 
-## 🔄 Future Enhancements
+## Future Enhancements
 
 ### **Planned Features**
 

@@ -40,6 +40,8 @@ app.get('/health', (req, res) => {
 app.use('/market',marketRoutes)
 
 
+
+
 // **New API endpoints for real market data**
 app.get('/market/quote/:symbol', async (req, res) => {
   await marketController.getQuote(req, res);
@@ -52,6 +54,8 @@ app.get('/market/quotes', async (req, res) => {
 app.get('/market/search', async (req, res) => {
   await marketController.searchStocks(req, res);
 });
+
+
 
 // Error handling
 // Global error handler
